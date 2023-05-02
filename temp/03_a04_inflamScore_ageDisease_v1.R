@@ -1,0 +1,141 @@
+# libraries & functions
+# load libraries & functions --------------------------
+library(fgsea)
+#library('org.Hs.eg.db')
+library(ComplexHeatmap)
+library(circlize)
+library(ggpubr)
+
+get.fgsea_singleInput <- function(dat, col_input, col_geneID) {
+  # Description: prepare the input for fgsea
+  
+  # Arguments: 
+  # dat - data with gene ID in one column and gene value/expression in other columns
+  # col_input - name of the input column
+  # col_geneID - name of the column present gene ID
+  
+  # Returns: fgsaInput - input vector for the fgsea analysis
+  
+  fgseaInput <- dat[, col_input]
+  names(fgseaInput) <- dat[, col_geneID]
+  
+  return(fgseaInput)
+}
+
+get.fgseaRes <- function(dat, convertID, hallmarkSet) {
+  # Description: run fgsea (GSEA) for all subjects/patients
+  
+  # Arguments: 
+  # dat - data with patients in row, proteins in column
+  # convertID - table to convert protein OlinkID to gene Entrez ID
+  # hallmarkSet - the hallmark / reference gene set to run GSEA
+  
+  # Returns: fgsaRes - a list of fgsea result for each patient
+  
+  fgseaRes <- list()
+  for (patient in rownames(dat)) {
+    
+    ranks_temp <- get.fgsea_singleInput(
+      dat = dat %>% t() %>% as.data.frame() %>% 
+        rownames_to_column("OlinkID") %>% left_join(convertID), 
+      col_input = patient, col_geneID = "ENTREZID")
+    
+    fgseaRes[[patient]] <- fgsea(hallmarkSet, ranks_temp) %>% 
+      as_tibble() %>% dplyr::select(pathway, size, leadingEdge, NES) %>%
+      mutate(name = patient)
+  }
+  
+  return(fgseaRes)
+}
+
+# calculate inflammation score - using average (NES values of inflammation hallmark sets from GSEA) at baseline  -----------------------
+load("proteinDat_impute.RData") # load imputed protein data using median impute
+load("gsea_hallmarktSet.RData") # load hallmark gene sets (prepare from from MSigDB) & convert protein - Entrez gene ID
+
+# run code for all cohort
+fgseaResTab <- list()
+for (cohort in names(proteinDat_impute)) {
+  inputDat <- proteinDat_impute[[cohort]]
+  
+  fgseaRes <- get.fgseaRes(dat = inputDat,
+                           convertID = protein_Entrez, 
+                           hallmarkSet = hallmarkSets) 
+  
+  fgseaResTab[[cohort]] <- fgseaRes %>% 
+    purrr::reduce(full_join) %>% # long format
+    select(-size, -leadingEdge) %>%
+    pivot_wider(names_from = name, values_from = NES) %>% # convert to wide format
+    column_to_rownames("pathway")
+  
+}
+
+fgseaRes_table <- fgseaResTab %>% 
+  lapply(function(x) x %>% rownames_to_column("pathway")) %>%
+  purrr::reduce(full_join) %>% column_to_rownames("pathway")
+
+#save(fgseaResTab, fgseaRes_table, file = "20230227_inflamScore.RData")
+# load calculated data
+load("20230227_inflamScore.RData")
+
+# calculate Z score
+fgseaRes_table_Zscore <-  fgseaRes_table %>% 
+  t() %>% scale() %>% as.data.frame() %>% t()
+
+# inflamScore use differnt hallmark pathways -------------------------------
+# hallmarkSubsets_v2
+picked_hallmarks <- hallmarkSubsets_v2 # pan-vaccine paper - figure 2
+# picked_hallmarks <- c("HALLMARK_IL6_JAK_STAT3_SIGNALING",
+#                       "HALLMARK_INFLAMMATORY_RESPONSE",
+#                       "HALLMARK_TNFA_SIGNALING_VIA_NFKB") # pan-vaccine paper - figure 4
+# picked_hallmarks <- c(hallmarkSubsets_v1, 
+#                       "HALLMARK_HYPOXIA",
+#                       "HALLMARK_REACTIVE_OXYGEN_SPECIES_PATHWAY")
+
+inflamScore <- fgseaRes_table[picked_hallmarks, ] %>% colMeans(na.rm = TRUE)
+# plot ------------------------
+# boxplot all_together (healthy & cirrhosis)
+metadat_boxplot <- cohorts_dat$donorInfo_all %>% 
+  left_join(cohorts_dat$donorSample_all %>% filter(time == "T1")) %>%
+  full_join(cohorts_dat$HAItiter_all) %>%
+  full_join(HAIreclassify$all_cohorts) %>%
+  mutate(category = factor(category, levels = c("NR", "Other", "TR"))) %>%
+  mutate_at(vars(contains("reclassify")), ~factor(.x, levels = c("LL", "LH", "HL", "HH"))) %>%
+  mutate(group = ifelse(disease == "healthy", age_group, disease)) %>%
+  mutate(group = factor(group, levels = c("young","old",  "cirrhosis"))) %>%
+  left_join(as.data.frame(inflamScore) %>% rownames_to_column("name"))
+
+score <- "inflamScore"
+
+my_comparisons_group <- list(c("young", "old"), c("old", "cirrhosis"), c("young", "cirrhosis"))
+
+ggboxplot(metadat_boxplot, x = "group", y = score,
+          paletter = "jco", add = "jitter") + 
+  stat_compare_means(comparisons = my_comparisons_group ,
+                     method = "t.test")
+
+# compare_means(inflamScore ~ group, data = metadat_boxplot, ref.group = ".all.", method = "t.test")
+stat.test <- compare_means(inflamScore ~ group, data = metadat_boxplot, 
+                           comparisons = my_comparisons_group, 
+                           method = "t.test")
+ggboxplot(metadat_boxplot, x = "group", y = score,
+          paletter = "jco", add = "jitter") + 
+  stat_pvalue_manual(stat.test, label = "p.adj", 
+                     y.position = c(1.3, 1.7, 1.5))
+# inflam.Score to abFC ------------------------------
+metadat_boxplot %>%
+  ggplot(aes(x = H1N1_abFC_combine, y = inflamScore)) + 
+  geom_jitter() +
+  stat_smooth(method = "lm", se = FALSE) + stat_cor() +
+  theme_bw()
+
+metadat_boxplot %>% #filter(condition == "healthy") %>% 
+  ggplot(aes(x = H1N1_abFC_combine, y = inflamScore, col = group)) + 
+  geom_point(position = position_jitterdodge(jitter.width = 0.25, jitter.height = 0.25)) +
+  stat_smooth(method = "lm", se = FALSE) + stat_cor(label.x = 7.5, label.y = c(-0.2, -0.4, -0.6)) +
+  theme_bw() + theme(legend.position = "top")
+
+metadat_boxplot %>% #filter(condition == "healthy") %>% 
+  ggplot(aes(x = H1N1_T1_combine, y = inflamScore, col = group)) + 
+  geom_point(position = position_jitterdodge(jitter.width = 0.25, jitter.height = 0.25)) +
+  stat_smooth(method = "lm", se = FALSE) + stat_cor(label.x = 7, label.y = c(-0.2, -0.4, -0.6)) +
+  theme_bw() + theme(legend.position = "top")
