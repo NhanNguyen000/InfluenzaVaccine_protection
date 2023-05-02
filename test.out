@@ -1,0 +1,59 @@
+# A tibble: 2 x 2
+  reclassify     n
+  <chr>      <int>
+1 LL            48
+2 Protector    218
+# A tibble: 3 x 3
+# Groups:   H1N1_reclassify [3]
+  H1N1_reclassify reclassify     n
+  <fct>           <chr>      <int>
+1 LH              Protector     16
+2 HL              Protector     16
+3 HH              Protector     16
+# A tibble: 2 x 2
+  reclassify     n
+  <chr>      <int>
+1 LL            48
+2 Protector     48
+# A tibble: 2 x 2
+# Groups:   reclassify [2]
+  reclassify     n
+  <chr>      <int>
+1 LL            33
+2 Protector     33
+# A tibble: 2 x 2
+  reclassify     n
+  <chr>      <int>
+1 LL            15
+2 Protector     15
+[1] "Run 1 time."
+[1] "Run 2 time."
+[1] "Run 3 time."
+bioinf022
+########################################
+#            Job Accounting            #
+########################################
+Name                : test
+User                : nnguyen
+Account             : biim_gst
+Partition           : cpu
+QOS                 : normal
+NNodes              : 1
+Nodes               : bioinf022
+Cores               : 2
+GPUs                : 0
+State               : COMPLETED
+ExitCode            : 0:0
+Submit              : 2023-04-21T10:27:12
+Start               : 2023-04-21T10:27:13
+End                 : 2023-04-21T10:29:27
+Waited              : 00:00:01
+Reserved walltime   : 10:00:00
+Used walltime       : 00:02:14
+Used CPU time       : 00:02:09 (Efficiency: 48.33%)
+% User (Computation): 99.11%
+% System (I/O)      :  0.89%
+Mem reserved        : 16G
+Max Mem used        : 367.76M (bioinf022)
+Max Disk Write      : 0.00  (bioinf022)
+Max Disk Read       : 10.24K (bioinf022)
