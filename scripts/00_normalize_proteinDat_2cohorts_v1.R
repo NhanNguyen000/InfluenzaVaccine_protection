@@ -76,7 +76,7 @@ protein_normDat$ZirFlu <- protein_normOlink$normed_ZirFlu %>%
   tibble::column_to_rownames(var = 'SampleID')
 
 # save data ----------------------------------------------------
-save(protein_normDat, file = "protein_normDat.RData")
+# save(protein_normDat, file = "protein_normDat.RData")
 
 # check data before and after normalization ------------------------------------
 dat.preNorm <- ZirFlu$protein_dat %>% rownames_to_column("name") %>%

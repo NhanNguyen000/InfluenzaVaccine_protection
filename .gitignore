@@ -5,7 +5,8 @@
 # Session Data files
 .RData
 .RDataTmp
-.h5seurat
+*.h5seurat
+*.h5ad
 
 # User-specific files
 .Ruserdata

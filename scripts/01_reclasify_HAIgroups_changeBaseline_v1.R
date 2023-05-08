@@ -48,6 +48,9 @@ get.boxplot_reclassify_perStrain <- function(dat, strain_list) {
   return(plot_list)
 }
 
+# load data from 2 cohorts
+load("../ZirFlu_NhanNguyen/ZirFlu.RData")
+load("../iMED_NhanNguyen/iMED.RData")
 # cutoff =======================================================================
 # (baseline < 40 ) == T1_low. (abFC >= 4) == abFC_high
 # (baseline >= 40) == T1_high. (abFC < 4) == abFC_low
@@ -142,7 +145,7 @@ HAIreclassify2$all_cohorts <- HAIreclassify2 %>% purrr::reduce(full_join) %>%
 
 HAIreclassify2$all_cohorts %>% count(sameResponse_2Bstrains)
 
-save(HAIreclassify2, file = "HAIreclassify2.RData")
+# save(HAIreclassify2, file = "HAIreclassify2.RData")
 
 
 # check iMED --------------

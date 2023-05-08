@@ -28,7 +28,9 @@ get.rmProteins <- function(dat, NA_cutoff) {
   return(rmProteins)
 }
 
-
+# load data from 2 cohorts
+load("../ZirFlu_NhanNguyen/ZirFlu.RData")
+load("../iMED_NhanNguyen/iMED.RData")
 # get protein data per (cohort & season) at baseline (T1) ---------------------------------
 ZirFlu_sampleT1 <- list()
 for (year in c("2019", "2020")) {
@@ -68,4 +70,4 @@ for (cohort in names(proteinDat)) {
     mutate_if(is.numeric, function(x) ifelse(is.na(x), median(x, na.rm = TRUE), x))
 }
 
-save(proteinDat_impute, metadat_sampleT1, file = "proteinDat_impute.RData")
+# save(proteinDat_impute, metadat_sampleT1, file = "proteinDat_impute.RData")

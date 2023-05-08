@@ -13,8 +13,8 @@
 #SBATCH --mail-user=nhan.nguyen@helmholtz-hzi.de
 #SBATCH --clusters=bioinf
 
-cd /vol/projects/CIIM/Influenza/ZirrFlu/Combined_InfluenzaCohort_NhanNguyen
-Rscript 03_a07_responderScore_elasticModel_splitCohort_v1.R
+cd /vol/projects/CIIM/Influenza/ZirrFlu/InfluenzaCohorts_NhanNguyen
+Rscript 03_a07_responderScore_elasticModel_splitCohort_v2.R
 
 /usr/bin/hostname
 

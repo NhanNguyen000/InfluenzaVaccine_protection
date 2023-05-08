@@ -1,5 +1,9 @@
 library(tidyverse)
 
+# load data from 2 cohorts
+load("../ZirFlu_NhanNguyen/ZirFlu.RData")
+load("../iMED_NhanNguyen/iMED.RData")
+
 cohorts_dat <- list()
 # donor info ---------------------------------------
 cohorts_dat$donorInfo_all <- ZirFlu$donorInfo %>% mutate(cohort = "ZirFlu") %>%

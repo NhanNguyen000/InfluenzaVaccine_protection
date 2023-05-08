@@ -2,14 +2,17 @@ load("20230421_res.elasticModel_2groups_1to2Ratio_iMED.RData")
 load("20230421_res.elasticModel_2groups_equalRatio_iMED.RData")
 load("20230421_res.elasticModel_4groups_iMED.RData")
 
-load("20230421_res.elasticModel_2groups_1to2Ratio_splitCohort.RData")
 load("20230421_res.elasticModel_2groups_equalRatio_splitCohort.RData")
+load("20230421_res.elasticModel_2groups_1to2Ratio_splitCohort.RData")
+load("20230503_res.elasticModel_2groups_equalRatio_splitCohort.RData")
+load("20230503_res.elasticModel_2groups_1to2Ratio_splitCohort.RData")
 # load results from elastic model with using iMED as training cohort and ZirFlu as validation cohort 
 res_input <- res.elasticModel_2groups_equalRatio_splitCohort
 res_input <- res.elasticModel_2groups_1to2Ratio_splitCohort
 
 
-
+load("20230503_res.elasticModel_2groups_equalRatio_iMEDtraining_ZirFlu_iMEDpilot_valid_reduceParameters.RData")
+res_input <- res.elasticModel_2groups_equalRatio_iMEDtraining_ZirFlu_iMEDpilot_valid_reduceParameters
 
 # check model results form 2 cohort together------------------------------------------
 load("20230421_res.elasticModel_2groups_1to2Ratio.RData")
@@ -28,29 +31,44 @@ range(res_crosVal_Tab$proteins$Accuracy)
 range(res_crosVal_Tab$age_proteins$Accuracy)
 range(res_crosVal_Tab$age_sex_proteins$Accuracy)
 range(res_crosVal_Tab$age_sex_abBaseline_proteins$Accuracy)
+range(res_crosVal_Tab$age_sex_abBaseline_proteins_metabolites$Accuracy)
 
 res_preVal_Tab <- res_input %>%
   lapply(function(x) x$res_preVal %>% 
            lapply(function(x) x$overall) %>% 
            purrr::reduce(rbind) %>% as.data.frame())
+
+
+res_preVal_Tab <- res_input %>%
+  lapply(function(x) x$res_preVal_3 %>% 
+           lapply(function(x) x$overall) %>% 
+           purrr::reduce(rbind) %>% as.data.frame())
+
 range(res_preVal_Tab$proteins$Accuracy)
 range(res_preVal_Tab$age_proteins$Accuracy)
 range(res_preVal_Tab$age_sex_proteins$Accuracy)
 range(res_preVal_Tab$age_sex_abBaseline_proteins$Accuracy)
+range(res_preVal_Tab$age_sex_abBaseline_proteins_metabolites$Accuracy)
 
 res_preVal_Tab_detail <- res_input %>%
   lapply(function(x) x$res_preVal %>% 
            lapply(function(x) x$byClass) %>% 
            purrr::reduce(rbind) %>% as.data.frame())
+
+res_preVal_Tab_detail <- res_input %>%
+  lapply(function(x) x$res_preVal_3 %>% 
+           lapply(function(x) x$byClass) %>% 
+           purrr::reduce(rbind) %>% as.data.frame())
 modelInfo <- "Sensitivity"
+modelInfo <- "Precision"
+modelInfo <- "Recall"
+
 modelType <- "proteins"
 modelType <- "age_proteins"
 modelType <- "age_sex_proteins"
 modelType <- "age_sex_abBaseline_proteins"
-#modelInfo <- "Precision"
-#modelInfo <- "Recall"
-
-range(res_preVal_Tab_detail[[modelType]][[modelInfo]])
+modelType <- "age_sex_abBaseline_proteins_metabolites"
+range(res_preVal_Tab_detail[[modelType]][[modelInfo]], na.rm = TRUE)
 
 # if res_input is res.elasticModel_4groups
 coefs_Tab_all <- res.elasticModel_4groups %>%

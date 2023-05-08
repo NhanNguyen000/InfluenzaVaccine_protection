@@ -1,0 +1,93 @@
+# A tibble: 2 x 2
+  reclassify     n
+  <chr>      <int>
+1 LL            48
+2 Protector    218
+# A tibble: 4 x 3
+  cohort reclassify     n
+  <chr>  <chr>      <int>
+1 ZirFlu LL            16
+2 ZirFlu Protector     50
+3 iMED   LL            32
+4 iMED   Protector    168
+# A tibble: 3 x 3
+# Groups:   H1N1_reclassify [3]
+  H1N1_reclassify reclassify     n
+  <fct>           <chr>      <int>
+1 LH              Protector     11
+2 HL              Protector     11
+3 HH              Protector     11
+# A tibble: 2 x 2
+  reclassify     n
+  <chr>      <int>
+1 LL            32
+2 Protector     33
+# A tibble: 2 x 2
+  reclassify     n
+  <chr>      <int>
+1 LL            16
+2 Protector     50
+  H1N1_reclassify  n
+1              HH  7
+2              HL 11
+3              LH 13
+4              LL  3
+  H3N2_reclassify  n
+1              HH 19
+2              HL  9
+3              LH  6
+  B_reclassify  n
+1           HH  9
+2           HL 15
+3           LH  2
+4           LL  8
+  reclassify  n
+1         LL  3
+2  Protector 31
+  reclassify  n
+1         LL  8
+2  Protector 26
+# A tibble: 2 x 2
+  reclassify     n
+  <chr>      <int>
+1 LL            32
+2 Protector     33
+# A tibble: 2 x 2
+  reclassify     n
+  <chr>      <int>
+1 LL            16
+2 Protector     50
+  reclassify  n
+1         LL  3
+2  Protector 31
+  reclassify  n
+1         LL  8
+2  Protector 26
+bioinf022
+########################################
+#            Job Accounting            #
+########################################
+Name                : iMEDpilot
+User                : nnguyen
+Account             : biim_gst
+Partition           : cpu
+QOS                 : normal
+NNodes              : 1
+Nodes               : bioinf022
+Cores               : 2
+GPUs                : 0
+State               : COMPLETED
+ExitCode            : 0:0
+Submit              : 2023-05-03T12:00:31
+Start               : 2023-05-03T12:00:31
+End                 : 2023-05-03T12:01:32
+Waited              :   00:00:00
+Reserved walltime   : 1-16:00:00
+Used walltime       :   00:01:01
+Used CPU time       :   00:00:50 (Efficiency: 41.63%)
+% User (Computation): 97.74%
+% System (I/O)      :  2.26%
+Mem reserved        : 16G
+Max Mem used        : 386.98M (bioinf022)
+Max Disk Write      : 0.00  (bioinf022)
+Max Disk Read       : 10.24K (bioinf022)
