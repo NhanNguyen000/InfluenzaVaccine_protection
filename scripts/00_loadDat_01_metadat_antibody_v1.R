@@ -1,3 +1,5 @@
+rm(list = ls())
+
 library(tidyverse)
 library(readxl)
 
@@ -12,12 +14,20 @@ get.log2 <- function(dat) {
 # iMED ================================================================================
 iMED <- list()
 ## metadata  --------------------------------------------------------
-iMED$metaCohort1 <- read.csv('/vol/projects/CIIM/Influenza/iMED/metadata/meta_cohort1.csv', row.names = 1)
-iMED$metaCohort2 <- read.csv('/vol/projects/CIIM/Influenza/iMED/metadata/meta_cohort2.csv', row.names = 1)
+iMED$meta2014 <- read.csv('/vol/projects/CIIM/Influenza/iMED/metadata/meta_cohort1.csv', row.names = 1) %>%
+  mutate(probandID = ifelse(nchar(ProbandID) ==2, 
+                            paste0("I-0", ProbandID), paste0("I-", ProbandID)))
+iMED$meta2015 <- read.csv('/vol/projects/CIIM/Influenza/iMED/metadata/meta_cohort2.csv', row.names = 1) %>%
+  mutate(ProbenID = as.character(ProbenID), 
+         probandID = ifelse(nchar(ProbandID) == 1, 
+                            paste0("I-000", ProbandID), 
+                            ifelse(nchar(ProbandID) == 2, paste0("I-00", ProbandID), 
+                                   ifelse(nchar(ProbandID) == 3, 
+                                          paste0("I-0", ProbandID), paste0("I-", ProbandID)))))
 
 ## HAI antibody titers -----------------------------------------------
-iMED$HAIcohort1 <- read.table('/vol/projects/CIIM/Influenza/iMED/metadata/hai_titers_pilot.tsv', header = TRUE)
-iMED$HAIcohort2 <- read.csv2('/vol/projects/CIIM/Influenza/iMED/metadata/hai_titers.csv')
+iMED$HAI_2014 <- read.table('/vol/projects/CIIM/Influenza/iMED/metadata/hai_titers_pilot.tsv', header = TRUE)
+iMED$HAI_2015 <- read.csv2('/vol/projects/CIIM/Influenza/iMED/metadata/hai_titers.csv')
 
 ## MN antibody titers ---------------------------------------------
 iMED$MNbothCohorts <- read.csv2('/vol/projects/CIIM/Influenza/iMED/metadata/MNtiters_raw.csv')
@@ -48,7 +58,8 @@ names(HAIabFC_2019) <- c("condition", "patientID",
                             "H1N1_abFC", "H3N2_abFC", "Bvictoria_abFC", "Byamagata_abFC",
                             "vaccine_response")
 ZirFlu$HAI_2019 <- HAItiter_2019 %>% slice(-1) %>% fill(condition) %>%
-  full_join(HAIabFC_2019 %>% slice(-1) %>% fill(condition))
+  full_join(HAIabFC_2019 %>% slice(-1) %>% fill(condition)) %>%
+  mutate_at(c(3:18), as.numeric)
 
 rm(HAIabFC_2019, HAItiter_2019)
 
@@ -74,7 +85,8 @@ names(HAIabFC_2020) <- c("condition", "patientID",
 
 
 ZirFlu$HAI_2020 <- HAItiter_2020 %>% slice(-1) %>% fill(condition) %>%
-  full_join(HAIabFC_2020 %>% slice(-1) %>% fill(condition))
+  full_join(HAIabFC_2020 %>% slice(-1) %>% fill(condition)) %>%
+  mutate_at(c(3:18), as.numeric)
 
 rm(HAIabFC_2020, HAItiter_2020)
 ## MN antibody titers ---------------------------------------------------------
@@ -106,11 +118,9 @@ names(MNabFC_2019) <- c("condition", "patientID",
 ZirFlu$MN_2019 <- MNtiter_2019 %>% full_join(MNabFC_2019) %>%
   mutate(season = "2019", condition = str_to_lower(condition)) %>%
   relocate(season)
-
+rm(MNabFC_2019, MNtiter_2019)
 # save data ================================================================================
-cohorts_rawDat <- list("iMED" = iMED, "ZirFlu" = ZirFlu)
-# save data
-save(cohorts, file = "cohorts.RData")
+save(iMED, ZirFlu, file = "metaDat_antibody.RData")
 
 
 

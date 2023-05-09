@@ -1,3 +1,5 @@
+rm(list = ls())
+
 library(tidyverse)
 library(OlinkAnalyze)
 library(openxlsx)
@@ -11,7 +13,7 @@ rawDat_iMEDprotein <- read_NPX('/vol/projects/CIIM/Influenza/iMED/proteomic/raw_
 # ZirFlu
 rawDat_ZirFluprotein <- read_NPX(filename = "/vol/projects/CIIM/Influenza/ZirrFlu/proteomic/raw_data/20212645_Li_NPX_2022-02-02.csv")
 
-## protein plate and cohort informations --------------------------------------------------------------------
+## protein plate and cohort informations ----------------------------------------
 ZirFlu_proteinPlate <- read_excel("/vol/projects/CIIM/Influenza/ZirrFlu/proteomic/raw_data/ZirrFlu plates final.xlsx",
                                   sheet = "Phenotypes")
 
@@ -19,10 +21,9 @@ ZirFlu_iMED_brideSamples <- ZirFlu_proteinPlate %>%
   dplyr::select(patientID, probenID) %>% distinct() %>%
   dplyr::slice(which(grepl("human", patientID))) # 10 bridge samples with number and FR numbers
 
-iMED_metaCohort2 <- read.csv('/vol/projects/CIIM/Influenza/iMED/metadata/meta_cohort2.csv', row.names = 1)
-ZirFlu_metaCohorts <- s
-ZirFlu_iMED_brideSamples_v2 <- iMED_metaCohort2 %>% filter(name %in% ZirFlu_proteinPlate$patientID) # 5 overlapped samples appear in the used iMED samples (n = 200)
-intersect(ZirFlu_iMED_brideSamples_v2$name, ZirFlu_iMED_brideSamples$patientID) # 5 samples overlap
+# iMED_metaCohort2 <- read.csv('/vol/projects/CIIM/Influenza/iMED/metadata/meta_cohort2.csv', row.names = 1)
+# ZirFlu_iMED_brideSamples_v2 <- iMED_metaCohort2 %>% filter(name %in% ZirFlu_proteinPlate$patientID) # 5 overlapped samples appear in the used iMED samples (n = 200)
+# intersect(ZirFlu_iMED_brideSamples_v2$name, ZirFlu_iMED_brideSamples$patientID) # 5 samples overlap
 
 # rename the sample in ZirFlu to match the iMED sample name
 rawDat_ZirFluprotein_rename <- rawDat_ZirFluprotein %>% 
@@ -43,6 +44,7 @@ overlap_samples <- intersect(rawDat_ZirFluprotein_rename$SampleID, rawDat_iMEDpr
   filter(!str_detect(., 'CONTROL_SAMPLE')) %>% #Remove control samples
   pull(.) # 10 overlapped samples between 2 batches
 
+# normalization --------------------------------------------------------
 # Perform Bridging normalization, iMED normalization - "Intensity", ZirFlu = "Plate control" and "Intensity"
 norm_OlinkDat <- olink_normalization(df1 = rawDat_ZirFluprotein_rename, 
                                      df2 = rawDat_iMEDprotein, 
@@ -60,31 +62,67 @@ protein_normOlink[["normed_iMED"]] <- norm_OlinkDat %>%
 protein_normOlink[["normed_ZirFlu"]] <- norm_OlinkDat %>% 
   filter(Project == "ZirFlu") %>% dplyr::select(-c(Project, Adj_factor))
 
-# convert Olink normalized data to table
+# check the annotation 
+iMED_proteinAnnot <- rawDat_iMEDprotein %>%
+  distinct(Assay, .keep_all = TRUE) %>% select(OlinkID, UniProt, Assay) %>%
+  arrange(OlinkID)
+ZirFlu_proteinAnnot <- rawDat_ZirFluprotein_rename %>%
+  distinct(Assay, .keep_all = TRUE) %>% select(OlinkID, UniProt, Assay) %>%
+  arrange(OlinkID)
+
+identical(iMED_proteinAnnot, ZirFlu_proteinAnnot) # TRUE, so the samme OlinkID and protein for both cohorts
+proteinAnnot <- iMED_proteinAnnot
+
+# convert Olink normalized data to table -------------------------
+# # test if could directly convert to protein name
+# dat_Olink <- protein_normOlink$normed_ZirFlu %>%
+#   mutate(SampleID = stringr::str_remove(SampleID, "^0+")) %>% # to matched with sample ID in the metadata
+#   filter(Assay_Warning == 'PASS') %>% 
+#   filter(QC_Warning == 'PASS') %>% 
+#   filter(MissingFreq < 0.30) %>% 
+#   reshape2::dcast(data = ., SampleID ~ OlinkID, value.var = 'NPX') %>% 
+#   slice(-c(grep("CONTROL", SampleID), grep("human", SampleID))) %>% # remove Control and brigde samples
+#   tibble::column_to_rownames(var = 'SampleID')
+# 
+# dat_ProteinName <- protein_normOlink$normed_ZirFlu %>%
+#   mutate(SampleID = stringr::str_remove(SampleID, "^0+")) %>% # to matched with sample ID in the metadata
+#   filter(Assay_Warning == 'PASS') %>% 
+#   filter(QC_Warning == 'PASS') %>% 
+#   filter(MissingFreq < 0.30) %>% 
+#   reshape2::dcast(data = ., SampleID ~ Assay, value.var = 'NPX') %>% 
+#   slice(-c(grep("CONTROL", SampleID), grep("human", SampleID))) %>% # remove Control and brigde samples
+#   tibble::column_to_rownames(var = 'SampleID') %>% 
+#   # convert back to Olink ID to compare with dat_Olink
+#   t() %>% as.data.frame %>%
+#   rownames_to_column("Assay") %>% 
+#   left_join(proteinAnnot %>% select(Assay, OlinkID)) %>%
+#   select(-Assay) %>% column_to_rownames("OlinkID") %>% t() %>% as.data.frame %>%
+#   select(names(dat_Olink))
+# 
+# identical(dat_Olink, dat_ProteinName) # TRUE, so could directly convert the Olink NPX data to protein name
+
 protein_normDat <- list()
-protein_normDat$iMED <- protein_normOlink$normed_iMED %>% 
-  filter(SampleID %in% iMED_metaCohort2$name) %>% 
+protein_normDat$iMED <- protein_normOlink$normed_iMED %>%
   filter(Assay_Warning == 'PASS') %>% 
   filter(QC_Warning == 'PASS') %>% 
   filter(MissingFreq < 0.30) %>% 
-  reshape2::dcast(data = ., SampleID ~ OlinkID, value.var = 'NPX') %>% 
+  reshape2::dcast(data = ., SampleID ~ Assay, value.var = 'NPX') %>% 
+  slice(-grep("CONTROL", SampleID)) %>% # remove Control samples
   tibble::column_to_rownames(var = 'SampleID')
 
 protein_normDat$ZirFlu <- protein_normOlink$normed_ZirFlu %>%
-  filter(SampleID %in% ZirFlu_proteinPlate$probenID) %>% # need to check the data
-  mutate(SampleID = stringr::str_remove(SampleID, "^0+")) %>% 
+  mutate(SampleID = stringr::str_remove(SampleID, "^0+")) %>% # to matched with sample ID in the metadata
   filter(Assay_Warning == 'PASS') %>% 
   filter(QC_Warning == 'PASS') %>% 
   filter(MissingFreq < 0.30) %>% 
-  mutate(SampleID = stringr::str_remove(SampleID, "^0+")) %>% 
-  reshape2::dcast(data = ., SampleID ~ OlinkID, value.var = 'NPX') %>% 
-  #arrange(match(SampleID, ZirFlu$donorSamples$probenID)) %>% 
+  reshape2::dcast(data = ., SampleID ~ Assay, value.var = 'NPX') %>% 
+  slice(-c(grep("CONTROL", SampleID), grep("human", SampleID))) %>% # remove Control and brigde samples
   tibble::column_to_rownames(var = 'SampleID')
 
 # save data ----------------------------------------------------
 # save(protein_normDat, file = "protein_normDat.RData")
 
-# check data before and after normalization ------------------------------------
+# check data before and after normalization (need to clean the code)------------------------------------
 rm(iMED, ZirFlu) # remove the current object with the same name but different content
 load("../ZirFlu_NhanNguyen/ZirFlu.RData")
 load("../iMED_NhanNguyen/iMED.RData")

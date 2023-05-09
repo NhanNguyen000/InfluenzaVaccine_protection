@@ -1,3 +1,5 @@
+rm(list = ls())
+
 library(OlinkAnalyze)
 library(openxlsx)
 library(tidyverse)
@@ -51,3 +53,7 @@ for (i in 1:nrow(change_probenID)) {
 }
 
 ZirFlu_mebo <-  ZirFlu_mebo_temp
+
+# save data ----------------------------------------------------
+save(iMED_mebo, iMED_meboAnnot, ZirFlu_mebo, ZirFlu_meboAnnot, 
+     file = "metaboliteDat.RData")
