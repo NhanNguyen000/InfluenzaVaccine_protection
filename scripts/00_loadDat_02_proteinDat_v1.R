@@ -1,24 +1,17 @@
 library(tidyverse)
 library(OlinkAnalyze)
 library(openxlsx)
+library(readxl)
 
-
-# iMED =========================================================================
-iMED$protein <- read_NPX('/vol/projects/CIIM/Influenza/iMED/proteomic/raw_data/20210222_Li_NPX_2021-05-18.csv') 
-
-# ZirFlu =======================================================================
-
-ZirFlu$protein <- read_NPX(filename = "/vol/projects/CIIM/Influenza/ZirrFlu/proteomic/raw_data/20212645_Li_NPX_2022-02-02.csv")
-
-# iMED data --------------------------------------------------------------------
+# load data =========================================================================
+## protein data --------------------------------------------------------------------
+# iMED data
 rawDat_iMEDprotein <- read_NPX('/vol/projects/CIIM/Influenza/iMED/proteomic/raw_data/20210222_Li_NPX_2021-05-18.csv') 
 
-# check code 
-# iMED data --------------------------------------------------------------------
-rawDat_iMEDprotein <- read_NPX('/vol/projects/CIIM/Influenza/iMED/proteomic/raw_data/20210222_Li_NPX_2021-05-18.csv') 
-
-# ZirFlu data ------------------------------------------
+# ZirFlu
 rawDat_ZirFluprotein <- read_NPX(filename = "/vol/projects/CIIM/Influenza/ZirrFlu/proteomic/raw_data/20212645_Li_NPX_2022-02-02.csv")
+
+## protein plate and cohort informations --------------------------------------------------------------------
 ZirFlu_proteinPlate <- read_excel("/vol/projects/CIIM/Influenza/ZirrFlu/proteomic/raw_data/ZirrFlu plates final.xlsx",
                                   sheet = "Phenotypes")
 
@@ -26,7 +19,9 @@ ZirFlu_iMED_brideSamples <- ZirFlu_proteinPlate %>%
   dplyr::select(patientID, probenID) %>% distinct() %>%
   dplyr::slice(which(grepl("human", patientID))) # 10 bridge samples with number and FR numbers
 
-ZirFlu_iMED_brideSamples_v2 <- iMED$metaCohort2 %>% filter(name %in% ZirFlu_proteinPlate$patientID) # 5 overlapped samples appear in the used iMED samples (n = 200)
+iMED_metaCohort2 <- read.csv('/vol/projects/CIIM/Influenza/iMED/metadata/meta_cohort2.csv', row.names = 1)
+ZirFlu_metaCohorts <- s
+ZirFlu_iMED_brideSamples_v2 <- iMED_metaCohort2 %>% filter(name %in% ZirFlu_proteinPlate$patientID) # 5 overlapped samples appear in the used iMED samples (n = 200)
 intersect(ZirFlu_iMED_brideSamples_v2$name, ZirFlu_iMED_brideSamples$patientID) # 5 samples overlap
 
 # rename the sample in ZirFlu to match the iMED sample name
@@ -46,7 +41,7 @@ rawDat_ZirFluprotein_rename <- rawDat_ZirFluprotein %>%
 overlap_samples <- intersect(rawDat_ZirFluprotein_rename$SampleID, rawDat_iMEDprotein$SampleID) %>% 
   data.frame() %>% 
   filter(!str_detect(., 'CONTROL_SAMPLE')) %>% #Remove control samples
-  pull(.) # 10 overlaped samples between 2 batches
+  pull(.) # 10 overlapped samples between 2 batches
 
 # Perform Bridging normalization, iMED normalization - "Intensity", ZirFlu = "Plate control" and "Intensity"
 norm_OlinkDat <- olink_normalization(df1 = rawDat_ZirFluprotein_rename, 
@@ -68,7 +63,7 @@ protein_normOlink[["normed_ZirFlu"]] <- norm_OlinkDat %>%
 # convert Olink normalized data to table
 protein_normDat <- list()
 protein_normDat$iMED <- protein_normOlink$normed_iMED %>% 
-  filter(SampleID %in% iMED$metaCohort2$name) %>% 
+  filter(SampleID %in% iMED_metaCohort2$name) %>% 
   filter(Assay_Warning == 'PASS') %>% 
   filter(QC_Warning == 'PASS') %>% 
   filter(MissingFreq < 0.30) %>% 
@@ -76,14 +71,14 @@ protein_normDat$iMED <- protein_normOlink$normed_iMED %>%
   tibble::column_to_rownames(var = 'SampleID')
 
 protein_normDat$ZirFlu <- protein_normOlink$normed_ZirFlu %>%
+  filter(SampleID %in% ZirFlu_proteinPlate$probenID) %>% # need to check the data
   mutate(SampleID = stringr::str_remove(SampleID, "^0+")) %>% 
-  filter(SampleID %in% ZirFlu$donorSamples$probenID) %>% # need to check the data
   filter(Assay_Warning == 'PASS') %>% 
   filter(QC_Warning == 'PASS') %>% 
   filter(MissingFreq < 0.30) %>% 
   mutate(SampleID = stringr::str_remove(SampleID, "^0+")) %>% 
   reshape2::dcast(data = ., SampleID ~ OlinkID, value.var = 'NPX') %>% 
-  arrange(match(SampleID, ZirFlu$donorSamples$probenID)) %>% 
+  #arrange(match(SampleID, ZirFlu$donorSamples$probenID)) %>% 
   tibble::column_to_rownames(var = 'SampleID')
 
 # save data ----------------------------------------------------
@@ -106,7 +101,7 @@ dat.postNorm <- protein_normDat$ZirFlu %>% rownames_to_column("name") %>%
 
 boxplot(dat.postNorm)
 
-# check the normalization issue - unmatched normalization method sample ------------------------
+# check the normalization issue - unmatched normalization method sample ======================
 # iMED normalization - "Intensity", ZirFlu = "Plate control" and "Intensity"
 ZirFlu_plate.control_sample <- rawDat_ZirFluprotein_rename %>% 
   dplyr::select(SampleID, Normalization) %>% distinct() %>% 
@@ -123,6 +118,8 @@ oneSample <- rawDat_ZirFluprotein_rename %>% filter(SampleID == "0308800416")
 
 oneSample2 <-	rawDat_ZirFluprotein_rename %>% filter(Assay == "PNLIPRP2") # plate control in the normalization column
 oneSample3 <-	rawDat_ZirFluprotein_rename %>% filter(Assay != "PNLIPRP2") # intensity in the normalization column
+unique(oneSample$Normalization)
+unique(oneSample2$Normalization)
 unique(oneSample3$Normalization) # only protein PNLIPRP2 use Plate control, the rest of proteins use intensity normalization
-
+# Answer from the Olink company: "The PNLIPRP2 is IPC normalized because of the bimodal distribution of this assay. You don’t need to worry about that when you are performing the bridge normalization"
 

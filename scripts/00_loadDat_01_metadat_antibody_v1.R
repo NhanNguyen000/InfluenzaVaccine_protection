@@ -93,7 +93,7 @@ names(MNtiter_2019) <- c("condition", "patientID",
                           paste0("Bvictoria_", c("T1", "T2", "T3")),
                           paste0("Byamagata_", c("T1", "T2", "T3")))
 
-MNabFC_2019 <- read_excel("/vol/projects/CIIM/Influenza/ZirrFlu/metadata/metadata/20230105_ZirFlu-2019-2020_MN_Titer_Valerie&Nhan.xlsx",
+MNabFC_2019 <- read_excel("/vol/projects/CIIM/Influenza/ZirrFlu/metadata/20230105_ZirFlu-2019-2020_MN_Titer_Valerie&Nhan.xlsx",
                                 sheet = "2019-2020 MN Fold-increase") %>%
   slice(-c(1, 2, 36, 52)) %>%
   fill(1, .direction = "down") %>%
@@ -103,7 +103,7 @@ MNabFC_2019 <- read_excel("/vol/projects/CIIM/Influenza/ZirrFlu/metadata/metadat
 names(MNabFC_2019) <- c("condition", "patientID",
                         paste0(c("H1N1_", "H3N2_", "Bvictoria_", "Byamagata_"), "abFC"))
 
-ZirFlu$MN_2019 <- MN_iter_2019 %>% full_join(MNabFC_2019) %>%
+ZirFlu$MN_2019 <- MNtiter_2019 %>% full_join(MNabFC_2019) %>%
   mutate(season = "2019", condition = str_to_lower(condition)) %>%
   relocate(season)
 
