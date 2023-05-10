@@ -111,7 +111,7 @@ protein_normDat$iMED <- protein_normOlink$normed_iMED %>%
   tibble::column_to_rownames(var = 'SampleID')
 
 protein_normDat$ZirFlu <- protein_normOlink$normed_ZirFlu %>%
-  mutate(SampleID = stringr::str_remove(SampleID, "^0+")) %>% # to matched with sample ID in the metadata
+  # mutate(SampleID = stringr::str_remove(SampleID, "^0+")) %>% # to matched with sample ID in the metadata
   filter(Assay_Warning == 'PASS') %>% 
   filter(QC_Warning == 'PASS') %>% 
   filter(MissingFreq < 0.30) %>% 

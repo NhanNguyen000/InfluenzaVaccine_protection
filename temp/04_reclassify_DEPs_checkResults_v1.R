@@ -1,3 +1,27 @@
+get.DE_tstat_vsOthers <- function(res) {
+  # Aim: extract the DE proteins/metabolites and the t-statistic value from 4 groups comparison ( LL_vsOther and HL_vsOther)
+  # following the get.limmaRes_multiComparesion's result
+  
+  resDE <- list()
+  res_tstatistic <- list()
+  for (compareType in c("LL_vsOthers", "HL_vsOthers")) {
+    compareGroups <- colnames(res[[1]][[compareType]]$p.value)[4:6]
+    
+    for (compareGroup in compareGroups) {
+      resDE[[compareType]][[compareGroup]] <- res %>%
+        lapply(function(x) x[[compareType]]$p.value %>% 
+                 as.data.frame() %>% select(compareGroup) %>% 
+                 filter(. <0.05))
+    }
+    
+    res_tstatistic[[compareType]] <- res %>%
+      lapply(function(x) x[[compareType]]$t %>% 
+               as.data.frame() %>% select(matches("reclassify")))
+  }
+  return(list("resDE" = resDE, "res_tstatistic" = res_tstatistic))
+}
+
+
 get.plotDat_clusterRow <- function(plotDat, colName, valColumn) {
   # Aim: make the heatmap data with dendrogram clustering order, so can have clustered heatmap with ggplot
   # this function witll write the plot data (long format) to wide format 

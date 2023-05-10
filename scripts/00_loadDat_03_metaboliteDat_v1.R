@@ -20,26 +20,47 @@ rawDat_ZirFlu_meboAnnot <- read.xlsx(xlsxFile = '/vol/projects/CIIM/Influenza/Zi
 # HMDB endogenous metabolites 
 hmdb_endogenous <- read_csv("/vol/projects/CIIM/Influenza/ZirrFlu/ZirFlu_NhanNguyen/reference/20221011_HMDB_endogenousMetabolites")
 
-iMED_meboAnnot <- rawDat_iMED_meboAnnot %>% 
+# iMED
+iMED_meboAnnot_temp <- rawDat_iMED_meboAnnot %>% 
   slice(which(Formula %in% hmdb_endogenous$CHEMICAL_FORMULA))
-length(unique(iMED_meboAnnot$ionIdx)) # 1345 metabolites
+length(unique(iMED_meboAnnot_temp$ionIdx)) # 1345 metabolites ionIdx
+length(unique(iMED_meboAnnot_temp$Formula)) # 1400 metabolites formula (1 ionIdx - multiple formulas)
 
-ZirFlu_meboAnnot <- rawDat_ZirFlu_meboAnnot %>% 
+iMED_meboAnnot <- iMED_meboAnnot_temp %>% 
+  select(ionIdx, Formula) %>% distinct() %>%
+  group_by(ionIdx) %>% summarise(Formula = paste(Formula, collapse = "_")) # combine multiple formulas per 1 ionIdx
+
+iMED_meboAnnot$Formula_v2 <- NA # 1 formula - multiple ionIdxs --> add duplicated count to the duplicate formula
+for (i in 1:nrow(iMED_meboAnnot)) {
+  iMED_meboAnnot$Formula_v2[i] <- ifelse(i %in% which(duplicated(iMED_meboAnnot$Formula)), 
+                                         paste0(iMED_meboAnnot$Formula[i], "_2"), 
+                                         iMED_meboAnnot$Formula[i])
+}
+
+# ZirFlu
+ZirFlu_meboAnnot_temp <- rawDat_ZirFlu_meboAnnot %>% 
   slice(which(Formula %in% hmdb_endogenous$CHEMICAL_FORMULA))
-length(unique(ZirFlu_meboAnnot$ionIdx)) # 786 metabolites
+length(unique(ZirFlu_meboAnnot_temp$ionIdx)) # 786 metabolites
+length(unique(ZirFlu_meboAnnot_temp$Formula)) # 799 metabolites formula (1 ionIdx - multiple formulas)
+
+ZirFlu_meboAnnot <- ZirFlu_meboAnnot_temp %>% 
+  select(ionIdx, Formula) %>% distinct() %>%
+  group_by(ionIdx) %>% summarise(Formula = paste(Formula, collapse = "_")) # combine multiple formulas per 1 ionIdx
+which(duplicated(ZirFlu_meboAnnot$Formula)) # interge = 0 --> no case of 1 formula - multiple ionIdxs
 
 # Covert the raw metabolites data to table format =========================================================================
 # iMED
-iMED_mebo <- rawDat_iMED_mebo  %>% tibble::column_to_rownames('ionIdx') %>% 
-  select(matches("human")) %>%
-  t() %>% as.data.frame %>%
-  select(unique(iMED_meboAnnot$ionIdx))
+iMED_mebo <- rawDat_iMED_mebo %>%
+  select(ionIdx, matches("human")) %>% right_join(iMED_meboAnnot) %>%
+  select(-ionIdx, -Formula) %>% column_to_rownames("Formula_v2") %>% 
+  t() %>% as.data.frame()
 
 # ZirFlu
-ZirFlu_mebo_temp <- rawDat_ZirFlu_mebo  %>% tibble::column_to_rownames('ionIdx') %>% 
+ZirFlu_mebo_temp <- rawDat_ZirFlu_mebo  %>%
   select(-all_of(c("ionMz", "ionAverageInt", "ionTopFormula", "ionTopIon", "ionTopName"))) %>%
-  t() %>% as.data.frame %>%
-  select(unique(ZirFlu_meboAnnot$ionIdx))
+  right_join(ZirFlu_meboAnnot) %>%
+  select(-ionIdx) %>% column_to_rownames("Formula") %>% 
+  t() %>% as.data.frame()
 
 old_probenID <- c(339151941, 339156196, 339151948, 339156278, 339151926, 339152850,
                   339156227, 339156287, 339156214, 339156220, 339156213, 339156314,
@@ -53,6 +74,7 @@ for (i in 1:nrow(change_probenID)) {
 }
 
 ZirFlu_mebo <-  ZirFlu_mebo_temp
+
 
 # save data ----------------------------------------------------
 save(iMED_mebo, iMED_meboAnnot, ZirFlu_mebo, ZirFlu_meboAnnot, 
