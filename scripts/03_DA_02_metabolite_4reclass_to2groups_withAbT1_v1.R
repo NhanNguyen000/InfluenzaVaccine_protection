@@ -23,7 +23,7 @@ get.limmaRes <- function(metaDat, inputDat) {
   
   if (identical(metaDat$name, colnames(inputDat_temp)) == TRUE) {
     res <- lmFit(inputDat_temp,
-                 design = model.matrix(~ + sex + age + T1 + reclassify, metaDat)) %>% 
+                 design = model.matrix(~ + sex + age + T1_log2 + reclassify, metaDat)) %>% 
       eBayes()
   } else res <- "Error: check input"
   
@@ -42,7 +42,7 @@ get.limmaRes_perStrain <- function(metadat, inputDat, strain_groups) {
   resList <- list()
   for (strain_group in strain_groups) {
     metadat_temp <- metadat %>% 
-      select(name, sex, age, paste0(strain_group, c("_T1", "_reclassify"))) %>% drop_na()
+      select(name, sex, age, paste0(strain_group, c("_T1_log2", "_reclassify"))) %>% drop_na()
     
     names(metadat_temp) <- names(metadat_temp ) %>% 
       gsub(paste0(strain_group, "_" ), "", .)
@@ -110,4 +110,4 @@ resMebo_withAbT1_4reclass_2group <- list(
   "ZirFlu_2019" = res_ZirFlu_2019,
   "ZirFlu_2020" = res_ZirFlu_2020)
 
-# save(resMebo_withAbT1_4reclass_2group, file = "resMebo_withAbT1_4reclass_2group.RData")
+save(resMebo_withAbT1_4reclass_2group, file = "resMebo_withAbT1_4reclass_2group.RData")

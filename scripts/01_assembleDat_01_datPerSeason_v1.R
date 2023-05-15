@@ -1,7 +1,17 @@
+# NOTE: I log2 the antibody titer and antibodi foldchange for all strains and log2 the metabolite data to normalize the data distributioin
+# protein data is already in the normal distribution, so I do not log2 protein data
 rm(list = ls())
 
 library(tidyverse)
 library(readxl)
+
+get.log2 <- function(dat) {
+  library(tidyverse)
+  library(rstatix)
+  outcome <- dat %>% mutate(across(where(is.numeric), ~log2(.x))) %>%
+    mutate(across(where(is.numeric), ~ifelse(is.infinite(.x), 0, .x)))
+  return(outcome)
+}
 
 # load data ---------------------------------------
 load("metaDat_antibody.RData")
@@ -36,7 +46,7 @@ cohorts$donorInfo_all <- iMED$meta2014 %>%
   select(-Condition) %>%
   mutate(sex = substring(gender, 1, 1),
          age_group = ifelse(age >= 60, "old", "young"),
-         disease = ifelse(condition == "Healthy", "healthy", "cirrhosis"))
+         disease = ifelse(condition == "Healthy", "healthy", "cirrhosis")) 
 
 # check groups
 cohorts$donorInfo_all %>% 
@@ -97,7 +107,20 @@ cohorts$HAI_all <- iMED$HAI_2014 %>%
       mutate(cohort = "ZirFlu") %>% rename("probandID" = "patientID")
   ) %>%
   # clean the data
-  mutate(responder = ifelse(responder == "other", "Other", responder))
+  mutate(responder = ifelse(responder == "other", "Other", responder)) %>%
+  mutate(across(ends_with("T1") | ends_with("T4") | ends_with("abFC"), # convert antibody titer and abFC to normalize the value distribution
+                ~log2(.x), .names = "{.col}_log2")) %>%
+  mutate(across(ends_with("log2"), ~ifelse(is.infinite(.x), 0, .x)))
+
+
+# summary(cohorts$HAI_all$H1N1_T1) # check the value range
+# summary(cohorts$HAI_all$H1N1_T1_log2)
+
+# hist(cohorts$HAI_all$H1N1_T1) # show skew distribution
+# hist(cohorts$HAI_all$H1N1_T1_log2) # show less skew distribution
+# hist(cohorts$HAI_all$H1N1_abFC)
+# hist(cohorts$HAI_all$H1N1_abFC_log2)
+
 
 # protein ---------------------------------------
 overlapped_proteins <- intersect(names(protein_normDat$iMED), names(protein_normDat$ZirFlu))
@@ -118,6 +141,12 @@ protein_Dat$ZirFlu_2019 <- protein_normDat$ZirFlu[
 protein_Dat$ZirFlu_2020 <- protein_normDat$ZirFlu[
   cohorts$donorSample_all$name[cohorts$donorSample_all$season == "2020"], overlapped_proteins]
 
+# summary(unlist(protein_Dat$iMED_2014)) # check the value range
+# summary(protein_Dat$iMED_2014$ADA) # check the value range
+# 
+# hist(unlist(protein_Dat$iMED_2014))
+# hist(protein_Dat$iMED_2014$ADA) # show quite normal distribution
+
 # metabolites ---------------------------------------
 overlapped_metabolites <- intersect(iMED_meboAnnot$Formula_v2, ZirFlu_meboAnnot$Formula)
 length(overlapped_metabolites)
@@ -128,17 +157,28 @@ mebo_Dat <- list()
 overlapped_metabolites_iMED <- iMED_meboAnnot %>% filter(Formula %in% overlapped_metabolites)
 
 mebo_Dat$iMED_2014 <- iMED_mebo[
-  cohorts$donorSample_all$name[cohorts$donorSample_all$season == "2014"], overlapped_metabolites_iMED$Formula_v2]
+  cohorts$donorSample_all$name[cohorts$donorSample_all$season == "2014"], overlapped_metabolites_iMED$Formula_v2] %>%
+  get.log2()
 
 mebo_Dat$iMED_2015 <- iMED_mebo[
-  cohorts$donorSample_all$name[cohorts$donorSample_all$season == "2015"], overlapped_metabolites_iMED$Formula_v2]
+  cohorts$donorSample_all$name[cohorts$donorSample_all$season == "2015"], overlapped_metabolites_iMED$Formula_v2] %>%
+  get.log2()
 
 mebo_Dat$ZirFlu_2019 <- ZirFlu_mebo[
-  cohorts$donorSample_all$name[cohorts$donorSample_all$season == "2019"], overlapped_metabolites]
+  cohorts$donorSample_all$name[cohorts$donorSample_all$season == "2019"], overlapped_metabolites] %>%
+  get.log2()
 
 mebo_Dat$ZirFlu_2020 <- ZirFlu_mebo[
-  cohorts$donorSample_all$name[cohorts$donorSample_all$season == "2020"], overlapped_metabolites]
+  cohorts$donorSample_all$name[cohorts$donorSample_all$season == "2020"], overlapped_metabolites] %>%
+  get.log2()
+
+summary(unlist(mebo_Dat$iMED_2014)) # check the value range
+summary(mebo_Dat$iMED_2014$C3H4O) # check the value range
+
+hist(unlist(mebo_Dat$iMED_2014)) # show less scale distribution compared to the raw data without log2
+hist(mebo_Dat$iMED_2014$C3H4O) # show quite normal distribution
+
 
 # save data ------------------------------------------------
-# save(cohorts, protein_Dat, mebo_Dat, file = "cohorts_dat.RData")
+save(cohorts, protein_Dat, mebo_Dat, file = "cohorts_dat.RData")
 

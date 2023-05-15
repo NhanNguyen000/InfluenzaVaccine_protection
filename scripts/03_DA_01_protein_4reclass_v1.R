@@ -98,4 +98,4 @@ resPro_4reclass <- list(  "iMED_2014" = res_iMED_2014,
                           "ZirFlu_2019" = res_ZirFlu_2019, 
                           "ZirFlu_2020" = res_ZirFlu_2020)
 
-# save(resPro_4reclass, file = "resPro_4reclass.RData")
+save(resPro_4reclass, file = "resPro_4reclass.RData")

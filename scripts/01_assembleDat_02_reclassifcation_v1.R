@@ -44,4 +44,4 @@ cohorts$HAI_all <-  cohorts$HAI_all %>%
   cbind(as.data.frame(reclassify_temp) %>% 
           rename_with(~paste0(.x, "_reclassify")))
 # save data ------------------------------------------------
-# save(cohorts, protein_Dat, mebo_Dat, file = "cohorts_dat.RData")
+save(cohorts, protein_Dat, mebo_Dat, file = "cohorts_dat.RData")

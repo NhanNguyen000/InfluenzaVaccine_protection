@@ -120,44 +120,44 @@ protein_normDat$ZirFlu <- protein_normOlink$normed_ZirFlu %>%
   tibble::column_to_rownames(var = 'SampleID')
 
 # save data ----------------------------------------------------
-# save(protein_normDat, file = "protein_normDat.RData")
+save(protein_normDat, file = "protein_normDat.RData")
 
-# check data before and after normalization (need to clean the code)------------------------------------
-rm(iMED, ZirFlu) # remove the current object with the same name but different content
-load("../ZirFlu_NhanNguyen/ZirFlu.RData")
-load("../iMED_NhanNguyen/iMED.RData")
-
-dat.preNorm <- ZirFlu$protein_dat %>% rownames_to_column("name") %>%
-  full_join(iMED$protein_dat %>% rownames_to_column("name")) %>%
-  column_to_rownames("name") %>% t()
-
-boxplot(dat.preNorm)
-
-dat.postNorm <- protein_normDat$ZirFlu %>% rownames_to_column("name") %>%
-  full_join(protein_normDat$iMED %>% rownames_to_column("name")) %>%
-  column_to_rownames("name") %>% t()
-
-boxplot(dat.postNorm)
-
-# check the normalization issue - unmatched normalization method sample ======================
-# iMED normalization - "Intensity", ZirFlu = "Plate control" and "Intensity"
-ZirFlu_plate.control_sample <- rawDat_ZirFluprotein_rename %>% 
-  dplyr::select(SampleID, Normalization) %>% distinct() %>% 
-  filter(Normalization == "Plate control")
-
-ZirFlu_plate.control_sample2 <- ZirFlu_plate.control_sample  %>% 
-  filter(SampleID %in% ZirFlu_proteinPlate$probenID)
-
-ZirFlu_intensity.control_sample  <- rawDat_ZirFluprotein_rename %>% 
-  dplyr::select(SampleID, Normalization) %>% distinct() %>% 
-  filter(Normalization == "Intensity")
-
-oneSample <- rawDat_ZirFluprotein_rename %>% filter(SampleID == "0308800416")
-
-oneSample2 <-	rawDat_ZirFluprotein_rename %>% filter(Assay == "PNLIPRP2") # plate control in the normalization column
-oneSample3 <-	rawDat_ZirFluprotein_rename %>% filter(Assay != "PNLIPRP2") # intensity in the normalization column
-unique(oneSample$Normalization)
-unique(oneSample2$Normalization)
-unique(oneSample3$Normalization) # only protein PNLIPRP2 use Plate control, the rest of proteins use intensity normalization
-# Answer from the Olink company: "The PNLIPRP2 is IPC normalized because of the bimodal distribution of this assay. You don’t need to worry about that when you are performing the bridge normalization"
+# # check data before and after normalization (need to clean the code)------------------------------------
+# rm(iMED, ZirFlu) # remove the current object with the same name but different content
+# load("../ZirFlu_NhanNguyen/ZirFlu.RData")
+# load("../iMED_NhanNguyen/iMED.RData")
+# 
+# dat.preNorm <- ZirFlu$protein_dat %>% rownames_to_column("name") %>%
+#   full_join(iMED$protein_dat %>% rownames_to_column("name")) %>%
+#   column_to_rownames("name") %>% t()
+# 
+# boxplot(dat.preNorm)
+# 
+# dat.postNorm <- protein_normDat$ZirFlu %>% rownames_to_column("name") %>%
+#   full_join(protein_normDat$iMED %>% rownames_to_column("name")) %>%
+#   column_to_rownames("name") %>% t()
+# 
+# boxplot(dat.postNorm)
+# 
+# # check the normalization issue - unmatched normalization method sample ======================
+# # iMED normalization - "Intensity", ZirFlu = "Plate control" and "Intensity"
+# ZirFlu_plate.control_sample <- rawDat_ZirFluprotein_rename %>% 
+#   dplyr::select(SampleID, Normalization) %>% distinct() %>% 
+#   filter(Normalization == "Plate control")
+# 
+# ZirFlu_plate.control_sample2 <- ZirFlu_plate.control_sample  %>% 
+#   filter(SampleID %in% ZirFlu_proteinPlate$probenID)
+# 
+# ZirFlu_intensity.control_sample  <- rawDat_ZirFluprotein_rename %>% 
+#   dplyr::select(SampleID, Normalization) %>% distinct() %>% 
+#   filter(Normalization == "Intensity")
+# 
+# oneSample <- rawDat_ZirFluprotein_rename %>% filter(SampleID == "0308800416")
+# 
+# oneSample2 <-	rawDat_ZirFluprotein_rename %>% filter(Assay == "PNLIPRP2") # plate control in the normalization column
+# oneSample3 <-	rawDat_ZirFluprotein_rename %>% filter(Assay != "PNLIPRP2") # intensity in the normalization column
+# unique(oneSample$Normalization)
+# unique(oneSample2$Normalization)
+# unique(oneSample3$Normalization) # only protein PNLIPRP2 use Plate control, the rest of proteins use intensity normalization
+# # Answer from the Olink company: "The PNLIPRP2 is IPC normalized because of the bimodal distribution of this assay. You don???t need to worry about that when you are performing the bridge normalization"
 
