@@ -60,6 +60,14 @@ v.table <- venn(res.venn$iMED_2015)
 v.table <- venn(res.venn$ZirFlu_2019)
 v.table <- venn(res.venn$ZirFlu_2020)
 
+a <- res.venn$iMED_2015
+names(a) <- c("H1N1_2015", "H3N2_2015", "B_2015")
+a$H1N1_2014 <- res.venn$iMED_2014$H1N1_reclassify
+a$B_2014 <- res.venn$iMED_2014$B_reclassify
+a$H1N1_2019 <- res.venn$ZirFlu_2019$H1N1_reclassify
+a$H1N1_2020 <- res.venn$ZirFlu_2020$H1N1_reclassify
+a$Byamagata_2020 <- res.venn$ZirFlu_2020$Byamagata_reclassify
+v.table <- venn(a)
 # heatmap  ----------------------------------------------------
 DAs_all <- DAs %>% 
   lapply(function(x) x %>% 
@@ -85,9 +93,10 @@ tstat_longDat <- tstat_all %>%
 # selected DAs for the heat map
 selected_DAs <- unique(c(intersect(res.venn$iMED_2015$H1N1_reclassify, res.venn$iMED_2015$H3N2_reclassify),
                          intersect(res.venn$iMED_2015$B_reclassify, res.venn$iMED_2015$H3N2_reclassify),
-                         intersect(res.venn$iMED_2015$H1N1_reclassify, res.venn$iMED_2015$B_reclassify))) # DAs in at least 2 strains
-
+                         intersect(res.venn$iMED_2015$H1N1_reclassify, res.venn$iMED_2015$B_reclassify))) # DAs in at least 2 strains for iMED_2015
 selected_DAs <- unique(unlist(res.venn$iMED_2015))
+selected_DAs <- unique(as.vector(unlist(res.venn)[which(duplicated(unlist(res.venn)))])) # DAs in at least twice acorss strain and season
+
 # heatmap
 plotDat <- tstat_longDat %>% filter(valName %in% selected_DAs) %>%
   slice(-which(group %in% c("iMED_2014_H3N2", 

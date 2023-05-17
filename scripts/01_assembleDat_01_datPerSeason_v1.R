@@ -121,6 +121,29 @@ cohorts$HAI_all <- iMED$HAI_2014 %>%
 # hist(cohorts$HAI_all$H1N1_abFC)
 # hist(cohorts$HAI_all$H1N1_abFC_log2)
 
+# MN titer ---------------------------------------
+cohorts$MN_all <- iMED$MNbothCohorts %>% rename("probandID" = "X..." )%>%
+  # iMED pilot and discovery cohort (n = 34 + n = 200, total n = 234)
+  full_join(iMED$meta2014 %>% select(probandID) %>% 
+              distinct() %>% mutate(season = "2014") %>%
+              full_join(iMED$meta2015 %>% select(probandID) %>% 
+                          distinct() %>% mutate(season = "2015"))) %>%
+  mutate(cohort = "iMED", 
+         "H1N1_abFC" = ifelse(H1N1_T1 == 0, H1N1_T4, H1N1_T4/H1N1_T1), 
+         "H3N2_abFC" = ifelse(H3N2_T1 == 0, H3N2_T4, H3N2_T4/H3N2_T1), 
+         "B_abFC" = ifelse(B_T1 == 0, B_T4, B_T4/B_T1)) %>%
+  # ZirFlu cohorts, season 2019
+  full_join(
+    ZirFlu$MN_2019 %>% select(-condition, -matches("T3")) %>%
+      rename("probandID" = "patientID") %>% 
+      setNames(names(.) %>% stringr::str_replace("_T2", "_T4")) %>%
+      mutate(cohort = "ZirFlu")
+  ) %>%
+  # clean the data
+  mutate(across(ends_with("T1") | ends_with("T4") | ends_with("abFC"), # convert antibody titer and abFC to normalize the value distribution
+                ~log2(.x), .names = "{.col}_log2")) %>%
+  mutate(across(ends_with("log2"), ~ifelse(is.infinite(.x), 0, .x)))
+
 
 # protein ---------------------------------------
 overlapped_proteins <- intersect(names(protein_normDat$iMED), names(protein_normDat$ZirFlu))

@@ -15,19 +15,18 @@ metadata_healthy <- cohorts$HAI_all %>%
   mutate(group = paste0(cohort, "_", season)) %>%
   mutate_at(vars(contains("reclassify")), ~factor(.x, levels = c("LL", "LH", "HL", "HH")))
 
-metadata_healthy %>%
-  ggplot() +
-  geom_bar(aes(x = name, y = H1N1_T1_log2), stat = "identity", fill="cyan",colour="cyan") +
-  geom_line(aes(x = name, y = H1N1_abFC_log2, group = 1), stat = "identity", color="red",size=1) 
-
-a <- metadata_healthy %>%
+# antibody T1 and abFC heterogeneity ------------------
+H1N1_T1_abFC_diverPlot <- metadata_healthy %>% filter(season == "2015") %>%
+  arrange(H1N1_T1_log2) %>% mutate(name = fct_reorder(name, H1N1_T1_log2)) %>%
   ggplot() +
   geom_bar(aes(x = name, y = 13, fill = H1N1_T1_log2), stat = "identity") +
   scale_fill_gradient2(low = "white", high = "red") +
   geom_line(aes(x = name, y = H1N1_abFC_log2, group = 1), stat = "identity", color="black",size=0.7) +
-  ylim(c(-10, 15))
-a
-a + coord_polar("x") + 
+  ylim(c(-10, 15)) +
+  geom_line(aes(x = name, y = log2(4), group = 1), color = "blue")
+
+H1N1_T1_abFC_diverPlot 
+H1N1_T1_abFC_diverPlot  + coord_polar("x") + 
   theme(panel.background = element_blank(),
         axis.title = element_blank(),
         panel.grid = element_blank(),
@@ -35,4 +34,25 @@ a + coord_polar("x") +
         axis.text.y = element_blank(),
         axis.ticks = element_blank(),
   ) 
+# antibody T1 and abFC negative correlation ------------------
+H1N1_T1_abFC_corr <- metadata_healthy %>% filter(season == "2015") %>%
+  mutate(group = ifelse(H1N1_T1 > 10, as.character(H1N1_T1), "10")) %>%
+  mutate(group = factor(group, levels = c("10", "20", "40", "80", "160", "320", "640", "1280", "2560")))
+
+H1N1_T1_abFC_corr %>% 
+  ggplot() +
+  geom_boxplot(aes(x = group, y = H1N1_abFC_log2)) + 
+  geom_jitter(aes(x = group, y = H1N1_abFC_log2), width = 0.2, size = 1.2) +
+  geom_smooth(aes(x = H1N1_T1_log2, y = H1N1_abFC_log2), method = "lm", se = FALSE) +
+  stat_cor(aes(x = H1N1_T1_log2, y = H1N1_abFC_log2), label.x = 5, label.y = 10) +
+  ylim(0, 12.5) + theme_classic()
+
+
+H1N1_T1_abFC_corr %>% 
+  ggplot(aes(x = group, y = H1N1_abFC_log2)) +
+  geom_boxplot() + 
+  geom_jitter(width = 0.2, size = 1.2) +
+  geom_smooth(aes(group = 1), method = "lm", se = FALSE) +
+  stat_cor(aes(group = 1), label.x = 5, label.y = 10) +
+  ylim(0, 12.5) + theme_classic()
 
