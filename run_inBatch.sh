@@ -8,6 +8,7 @@
 #SBATCH --threads-per-core=1      # Ensure we only get one logical CPU per core
 #SBATCH --cpus-per-task=1         # Number of cores per task
 #SBATCH --mem=16G                 # Memory per node | Alternative: --mem-per-cpu
+#SBATCH --time=40:00:00            # wall time limit (HH:MM:SS)
 #SBATCH --clusters=bioinf
 
 cd /vol/projects/CIIM/Influenza/ZirrFlu/InfluenzaCohorts_NhanNguyen/scripts/
