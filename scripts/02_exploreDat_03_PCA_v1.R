@@ -58,6 +58,10 @@ get.pca_plot(pca = protein_pca,
 get.pca_plot(pca = protein_pca, 
              metadat = proteinDat_metadata, 
              groupType = "responder")
+
+get.pca_plot(pca = protein_pca, 
+             metadat = proteinDat_metadata, 
+             groupType = "sex")
 # manual PCA plot
 ggplot(data.frame(protein_pca$x), aes(PC1, PC2, color = proteinDat_metadata$season)) +
   geom_point(alpha=.5) +
@@ -84,3 +88,7 @@ summary(metabolite_pca)$importance[1:3, 1:5]
 get.pca_plot(pca = metabolite_pca, 
              metadat = metaboliteDat_metadata, 
              groupType = "season")
+
+get.pca_plot(pca = metabolite_pca, 
+             metadat = metaboliteDat_metadata, 
+             groupType = "sex")

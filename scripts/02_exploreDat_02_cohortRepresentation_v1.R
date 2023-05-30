@@ -15,8 +15,6 @@ metadata_healthy <- cohorts$HAI_all %>%
   mutate_at(vars(contains("reclassify")), ~factor(.x, levels = c("LL", "LH", "HL", "HH")))
 
 # donut chart -------------------------
-PieDonut(test, aes(cohort, count = n))
-
 PieDonut(metadata_healthy, aes(season, sex), 
          r0 = 0.5, r2 = 1.1, start = -120,
          title = "Distribution of gender per season")
