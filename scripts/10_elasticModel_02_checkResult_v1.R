@@ -31,6 +31,8 @@ res_preVal_Tab_v2$age_sex_abT1_proteins_metabolites %>% lapply(function(x) range
 res_preVal_Tab_v2$age_sex_proteins_metabolites %>% lapply(function(x) range(x$Recall))
 
 # compare model performances -------------
+https://glmnet.stanford.edu/articles/glmnet.html - Saumya
+
 https://machinelearningmastery.com/compare-models-and-select-the-best-using-the-caret-r-package/
 https://easystats.github.io/performance/
 

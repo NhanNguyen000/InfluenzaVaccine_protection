@@ -51,8 +51,18 @@ H1N1_T1_abFC_corr %>%
 H1N1_T1_abFC_corr %>% 
   ggplot(aes(x = group, y = H1N1_abFC_log2)) +
   geom_boxplot() + 
-  geom_jitter(width = 0.2, size = 1.2) +
+  geom_jitter(aes(color = H1N1_reclassify), width = 0.2, size = 1.2) +
   geom_smooth(aes(group = 1), method = "lm", se = FALSE) +
   stat_cor(aes(group = 1), label.x = 5, label.y = 10) +
   ylim(0, 12.5) + theme_classic()
 
+# add color based on group reclassification
+H1N1_T1_abFC_corr %>% 
+  ggplot() +
+  geom_boxplot(aes(x = group, y = H1N1_abFC_log2), outlier.color = NA) + 
+  geom_jitter(aes(x = group, y = H1N1_abFC_log2, color = H1N1_reclassify), 
+              width = 0.2, size = 2) +
+  geom_smooth(aes(x = H1N1_T1_log2, y = H1N1_abFC_log2), method = "lm", se = FALSE) +
+  stat_cor(aes(x = H1N1_T1_log2, y = H1N1_abFC_log2), label.x = 5, label.y = 10) +
+  ylim(0, 12.5) + theme_classic() + 
+  theme(legend.position = "top")

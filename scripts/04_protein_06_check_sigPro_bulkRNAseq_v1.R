@@ -52,7 +52,7 @@ get.limmaRes_perStrain <- function(metadat, inputDat, strain_groups) {
   resList <- list()
   for (strain_group in strain_groups) {
     metadat_temp <- metadat %>% rename("reclassify" := strain_group) %>%
-      select(name, sex, age, reclassify) %>% drop_na()
+      select(SampleName, sex, age, reclassify) %>% drop_na()
     
     resList[[strain_group]] <- get.limmaRes(metadat_temp, inputDat)
   }
@@ -72,17 +72,15 @@ metadata_healthy <- cohorts$HAI_all %>%
 iMED_strains <- c("H1N1_reclassify", "H3N2_reclassify", "B_reclassify")
 
 # iMED cohort 2015
+inputDat_iMED_2015 <- iMED_transcripDat %>% as.data.frame()
+
 metadat_iMED_2015 <- metadata_healthy %>% filter(season == "2015", cohort == "iMED") %>%
-  right_join(iMED_transcrip_T1, by = c("probandID" = "patientID"))
+  right_join(iMED_transcrip_T1, by = c("probandID" = "patientID")) %>% 
+  arrange(factor(SampleName, levels = colnames(inputDat_iMED_2015)))
 
-inputDat_iMED_2015 <- iMED_transcripDat %>% t() %>% as.data.frame %>% select(metadat_iMED_2015$name)
-
-res_iMED_2015 <- get.limmaRes_perStrain(metadat =  metadat_iMED_2015,
+resPro_2015_bulkRNAseq <- get.limmaRes_perStrain(metadat =  metadat_iMED_2015,
                                         inputDat = inputDat_iMED_2015, 
                                         strain_groups = iMED_strains)
 
-
-
-
-# view ----------
-plotDat_order
+# save data ------------------------------------------------
+save(resPro_2015_bulkRNAseq, file = "resPro_2015_bulkRNAseq.RData")
