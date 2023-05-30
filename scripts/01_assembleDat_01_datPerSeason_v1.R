@@ -171,20 +171,20 @@ protein_Dat$ZirFlu_2020 <- protein_normDat$ZirFlu[
 # hist(protein_Dat$iMED_2014$ADA) # show quite normal distribution
 
 # metabolites ---------------------------------------
-overlapped_metabolites <- intersect(iMED_meboAnnot$Formula_v2, ZirFlu_meboAnnot$Formula)
+overlapped_metabolites <- intersect(unique(iMED_meboAnnot$Formula), ZirFlu_meboAnnot$Formula)
 length(overlapped_metabolites)
-# iMED has 1345 metabolites, ZirFlu has 786 metabolites -> overlapped metabolites: 508 metabolites
+# iMED has 1326 metabolites (with 1345 metabolite Idx), ZirFlu has 786 metabolites -> overlapped metabolites: 508 metabolites
 
 mebo_Dat <- list()
 # iMED have case: 1 formula - multiple ionIdxs
 overlapped_metabolites_iMED <- iMED_meboAnnot %>% filter(Formula %in% overlapped_metabolites)
 
 mebo_Dat$iMED_2014 <- iMED_mebo[
-  cohorts$donorSample_all$name[cohorts$donorSample_all$season == "2014"], overlapped_metabolites_iMED$Formula_v2] %>%
+  cohorts$donorSample_all$name[cohorts$donorSample_all$season == "2014"], unique(overlapped_metabolites_iMED$Formula)] %>%
   get.log2()
 
 mebo_Dat$iMED_2015 <- iMED_mebo[
-  cohorts$donorSample_all$name[cohorts$donorSample_all$season == "2015"], overlapped_metabolites_iMED$Formula_v2] %>%
+  cohorts$donorSample_all$name[cohorts$donorSample_all$season == "2015"], unique(overlapped_metabolites_iMED$Formula)] %>%
   get.log2()
 
 mebo_Dat$ZirFlu_2019 <- ZirFlu_mebo[

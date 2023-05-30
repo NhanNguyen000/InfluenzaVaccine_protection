@@ -3,6 +3,7 @@ rm(list = ls())
 library(OlinkAnalyze)
 library(openxlsx)
 library(tidyverse)
+library(dplyr)
 # load data =========================================================================
 # iMED data
 rawDat_iMED_mebo <- read.xlsx('/vol/projects/CIIM/Influenza/iMED/metabolic/raw_data/tables/DATA_CURATED_reformatted.xlsx',
@@ -52,7 +53,9 @@ which(duplicated(ZirFlu_meboAnnot$Formula)) # interge = 0 --> no case of 1 formu
 # iMED
 iMED_mebo <- rawDat_iMED_mebo %>%
   select(ionIdx, matches("human")) %>% right_join(iMED_meboAnnot) %>%
-  select(-ionIdx, -Formula) %>% column_to_rownames("Formula_v2") %>% 
+  select(-ionIdx, -Formula_v2) %>%
+  group_by(Formula) %>% summarise_all("mean") %>% # calclulate the average for all ionIdx measures with identical Formula
+  column_to_rownames("Formula") %>% 
   t() %>% as.data.frame()
 
 # ZirFlu
