@@ -1,0 +1,220 @@
+# configuration file to run Circos
+# need to created a data folder with all the need data
+# circos.conf
+
+karyotype = data/cohorts_sex.txt
+
+<ideogram>
+
+<spacing>
+default = 0.005r
+</spacing>
+
+radius           = 0.90r
+thickness        = 30p
+
+fill             = yes
+#stroke_color     = dgrey
+#stroke_thickness = 2p
+
+# band
+show_bands       = yes
+fill_bands       = yes
+band_transparency= 2
+
+# label
+show_label       = yes
+label_font       = default
+label_radius     = 1r + 50p
+label_size       = 50
+#label_parallel   = yes
+
+</ideogram>
+
+# tick
+show_ticks       = yes
+show_tick_labels = yes
+
+<ticks>
+radius           = 1r
+multiplier       = 1
+color            = black
+thickness        = 2p
+size             = 20p
+
+<tick>
+spacing          = 10u
+show_label       = yes
+label_size       = 20p
+</tick>
+
+</ticks>
+
+<plots>
+
+# plot for H1N1 strain
+<plot>
+type    = histogram
+file    = data/H1N1_abFC_log2.txt # log2 give better visualisation than raw value
+color   = black
+r0      = 0.90r
+r1      = 0.85r
+
+<rules>
+<rule>
+condition  = var(value) < 1.38
+fill_color = white
+</rule>
+<rule>
+condition  = var(value) > 1.38
+fill_color = green
+</rule>
+</rules>
+
+</plot>
+
+<plot>
+type    = heatmap
+file    = data/H1N1_T1.txt
+r0      = 0.90r
+r1      = 0.87r
+color = hs1_a5,hs1_a4,hs1_a3,hs1_a2,hs1_a1,hs1
+</plot>
+
+# plot for H3N2 strain
+<plot>
+type    = histogram
+file    = data/H3N2_abFC_log2.txt
+color   = black
+r0      = 0.80r
+r1      = 0.75r
+
+<rules>
+<rule>
+condition  = var(value) < 1.38
+fill_color = white
+</rule>
+<rule>
+condition  = var(value) > 1.38
+fill_color = green
+</rule>
+</rules>
+
+</plot>
+
+<plot>
+type    = heatmap
+file    = data/H3N2_T1.txt
+r0      = 0.80r
+r1      = 0.77r
+color = hs1_a5,hs1_a4,hs1_a3,hs1_a2,hs1_a1,hs1
+</plot>
+
+# plot for B strains
+## B strain in season 2014, 2015
+<plot>
+type    = histogram
+file    = data/B_abFC_log2.txt
+color   = black
+r0      = 0.70r
+r1      = 0.65r
+
+<rules>
+<rule>
+condition  = var(value) < 1.38
+fill_color = white
+</rule>
+<rule>
+condition  = var(value) > 1.38
+fill_color = green
+</rule>
+</rules>
+
+</plot>
+
+<plot>
+type    = heatmap
+file    = data/B_abFC_log2.txt
+r0      = 0.70r
+r1      = 0.67r
+color = hs1_a5,hs1_a4,hs1_a3,hs1_a2,hs1_a1,hs1
+</plot>
+
+## B victoria in season 2019, 2020
+<plot>
+type    = histogram
+file    = data/Bvictoria_abFC_log2.txt
+color   = black
+r0      = 0.70r
+r1      = 0.65r
+
+<rules>
+<rule>
+condition  = var(value) < 1.38
+fill_color = white
+</rule>
+<rule>
+condition  = var(value) > 1.38
+fill_color = green
+</rule>
+</rules>
+
+</plot>
+
+<plot>
+type    = heatmap
+file    = data/Bvictoria_abFC_log2.txt
+r0      = 0.70r
+r1      = 0.67r
+color = hs1_a5,hs1_a4,hs1_a3,hs1_a2,hs1_a1,hs1
+</plot>
+
+## B yamagata in season 2019, 2020
+<plot>
+type    = histogram
+file    = data/Byamagata_abFC_log2.txt
+color   = black
+r0      = 0.60r
+r1      = 0.55r
+
+<rules>
+<rule>
+condition  = var(value) < 1.38
+fill_color = white
+</rule>
+<rule>
+condition  = var(value) > 1.38
+fill_color = green
+</rule>
+</rules>
+
+</plot>
+
+<plot>
+type    = heatmap
+file    = data/Byamagata_abFC_log2.txt
+r0      = 0.60r
+r1      = 0.57r
+color = hs1_a5,hs1_a4,hs1_a3,hs1_a2,hs1_a1,hs1
+</plot>
+
+</plots>
+################################################################
+# The remaining content is standard and required. It is imported
+# from default files in the Circos distribution.
+#
+# These should be present in every Circos configuration file and
+# overridden as required. To see the content of these files,
+# look in etc/ in the Circos distribution.
+
+<image>
+<<include etc/image.conf>>
+</image>
+
+# RGB/HSV color definitions, color lists, location of fonts, fill patterns.
+# Included from Circos distribution.
+<<include etc/colors_fonts_patterns.conf>>
+
+# Debugging, I/O an dother system parameters
+# Included from Circos distribution.
+<<include etc/housekeeping.conf>>
