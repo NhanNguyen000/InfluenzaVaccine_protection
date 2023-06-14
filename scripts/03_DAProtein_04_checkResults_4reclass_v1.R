@@ -7,8 +7,14 @@ get.DAs <- function(resLimma) {
   # Aim: extract the DAPs/DAMs with p.value from linnear comparision comparison
   # following the get.limmaRes result
   
-  res_DA <- resLimma$p.value %>% as.data.frame %>% 
-    select(matches("reclassify")) %>% filter(. <0.05)
+  res_DA_temp <- resLimma$p.value %>% as.data.frame %>% 
+    select(matches("reclassify")) %>% mutate_all(~ifelse(. >= 0.05, NA, .)) %>%
+    slice(-which(rowSums(is.na(.)) == 3))
+  
+  res_DA <- list()
+  res_DA$LLvsLH <- res_DA_temp %>% select(matches("LH")) %>% drop_na()
+  res_DA$LLvsHL <- res_DA_temp %>% select(matches("HL")) %>% drop_na()
+  res_DA$LLvsHH <- res_DA_temp %>% select(matches("HH")) %>% drop_na()
   
   return(res_DA)
 }
@@ -44,38 +50,36 @@ get.plotDat_clusterRow <- function(plotDat, colName, valColumn) {
 }
 
 # load data --------------------------------------------------------
-load("resPro_4reclass_2group.RData")
+load("resPro_4reclass.RData")
 
 # significant proteins / metabolites ---------------------------------------------------------
-DAs <- resPro_4reclass_2group %>% 
+DAs <- resPro_4reclass %>% 
   lapply(function(x) x %>% lapply(function(y) get.DAs(y)))
 
-tstat_dat <- resPro_4reclass_2group %>%
+tstat_dat <- resPro_4reclass %>%
   lapply(function(x) x %>% lapply(function(y) get.tstat(y)))
 
 # Check venn diagram ---------------------------------------------
-res.venn <- DAs %>% lapply(function(x) x %>% lapply(function(y) rownames(y)))
-v.table <- venn(res.venn$iMED_2014)
-v.table <- venn(res.venn$iMED_2015)
-v.table <- venn(res.venn$ZirFlu_2019)
-v.table <- venn(res.venn$ZirFlu_2020)
+res.venn <- DAs %>% 
+  lapply(function(x) x %>% 
+           lapply(function(y) y %>% lapply(function(z) z %>% rownames(z))))
 
-a <- res.venn$iMED_2015
-names(a) <- c("H1N1_2015", "H3N2_2015", "B_2015")
-a$H1N1_2014 <- res.venn$iMED_2014$H1N1_reclassify
-a$B_2014 <- res.venn$iMED_2014$B_reclassify
-a$H1N1_2019 <- res.venn$ZirFlu_2019$H1N1_reclassify
-a$H1N1_2020 <- res.venn$ZirFlu_2020$H1N1_reclassify
-a$Byamagata_2020 <- res.venn$ZirFlu_2020$Byamagata_reclassify
-v.table <- venn(a)
+v.table <- venn(res.venn$iMED_2014$H1N1_reclassify)
+v.table <- venn(res.venn$iMED_2015$H3N2_reclassify)
+v.table <- venn(res.venn$ZirFlu_2019$Bvictoria_reclassify)
+v.table <- venn(res.venn$ZirFlu_2020$Byamagata_reclassify)
+
 # heatmap  ----------------------------------------------------
 DAs_all <- DAs %>% 
-  lapply(function(x) x %>% 
-           lapply(function(y) y %>% rownames_to_column("valName")) %>%
-           bind_rows(.id = "strain")) %>%
+  lapply(function(x) 
+    x %>% lapply(function(y) 
+      y %>% lapply(function(z) 
+        z %>% rownames_to_column("valName")) %>% purrr::reduce(full_join)) %>%
+      bind_rows(.id = "strain")) %>%
   bind_rows(.id = "season") %>%
   mutate(strain = gsub("_reclassify", "", strain)) %>%
-  rename("p.value" = "reclassifyprotectee")
+  gather(key = "comparison", value = "p.value", matches("reclassify")) %>% drop_na() %>%
+  mutate(comparison = gsub("reclassify", "_LLvs", comparison))
 
 tstat_all <- tstat_dat %>% 
   lapply(function(x) x %>% 
@@ -83,25 +87,24 @@ tstat_all <- tstat_dat %>%
            bind_rows(.id = "strain")) %>%
   bind_rows(.id = "season") %>%
   mutate(strain = gsub("_reclassify", "", strain))  %>%
-  rename("tstat" = "reclassifyprotectee")
+  gather(key = "comparison", value = "tstat", matches("reclassify")) %>%
+  mutate(comparison = gsub("reclassify", "_LLvs", comparison))
 
 tstat_longDat <- tstat_all %>%
   full_join(DAs_all) %>%
-  mutate(group = paste0(season, "_", strain)) %>%
+  mutate(group = paste0(season, "_", strain, comparison)) %>%
   separate(season, sep = "_", into = c("cohort", "season"))
 
 # selected DAs for the heat map
-# selected_DAs <- unique(c(intersect(res.venn$iMED_2015$H1N1_reclassify, res.venn$iMED_2015$H3N2_reclassify),
-#                          intersect(res.venn$iMED_2015$B_reclassify, res.venn$iMED_2015$H3N2_reclassify),
-#                          intersect(res.venn$iMED_2015$H1N1_reclassify, res.venn$iMED_2015$B_reclassify))) # DAs in at least 2 strains for iMED_2015
-# selected_DAs <- unique(unlist(res.venn$iMED_2015))
-selected_DAs <- unique(as.vector(unlist(res.venn)[which(duplicated(unlist(res.venn)))])) # DAs in at least twice acorss strain and season
-save(selected_DAs, file = "selected_DAPs.RData")
+selected_DAs <- unique(c(intersect(res.venn$iMED_2015$H1N1_reclassify, res.venn$iMED_2015$H3N2_reclassify),
+                         intersect(res.venn$iMED_2015$B_reclassify, res.venn$iMED_2015$H3N2_reclassify),
+                         intersect(res.venn$iMED_2015$H1N1_reclassify, res.venn$iMED_2015$B_reclassify))) # DAs in at least 2 strains
+
+selected_DAs <- unique(unlist(res.venn$iMED_2015))
 # heatmap
-plotDat <- tstat_longDat %>% filter(valName %in% selected_DAs) %>%
-  slice(-which(group %in% c("iMED_2014_H3N2", 
-                            "ZirFlu_2019_Bvictoria", "ZirFlu_2019_Byamagata", "ZirFlu_2019_H3N2", 
-                            "ZirFlu_2020_Bvictoria", "ZirFlu_2020_H3N2"))) # remove some group if needed
+plotDat <- tstat_longDat %>% 
+  filter(valName %in% selected_DAs) %>%
+  filter(cohort == "iMED") # pick cohort / comparison needed
 
 plotDat_order <- get.plotDat_clusterRow(plotDat, 
                                         colName = "group", 
@@ -114,3 +117,4 @@ plotDat_order %>%
   scale_fill_gradient2(low = "blue", mid = "white", high = "red") + 
   theme_bw() + 
   theme(axis.text.x = element_text(angle = 30, hjust = 1))
+

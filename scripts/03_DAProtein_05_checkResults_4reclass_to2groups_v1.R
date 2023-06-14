@@ -87,8 +87,8 @@ tstat_all <- tstat_dat %>%
 
 tstat_longDat <- tstat_all %>%
   full_join(DAs_all) %>%
-  mutate(group = paste0(season, "_", strain)) %>%
-  separate(season, sep = "_", into = c("cohort", "season"))
+  separate(season, sep = "_", into = c("cohort", "season")) %>%
+  mutate(group = paste0(season, "_", strain))
 
 # selected DAs for the heat map
 # selected_DAs <- unique(c(intersect(res.venn$iMED_2015$H1N1_reclassify, res.venn$iMED_2015$H3N2_reclassify),
@@ -96,12 +96,13 @@ tstat_longDat <- tstat_all %>%
 #                          intersect(res.venn$iMED_2015$H1N1_reclassify, res.venn$iMED_2015$B_reclassify))) # DAs in at least 2 strains for iMED_2015
 # selected_DAs <- unique(unlist(res.venn$iMED_2015))
 selected_DAs <- unique(as.vector(unlist(res.venn)[which(duplicated(unlist(res.venn)))])) # DAs in at least twice acorss strain and season
-save(selected_DAs, file = "selected_DAPs.RData")
-# heatmap
+#save(selected_DAs, file = "selected_DAPs.RData")
+
+## heatmap --------------------------------
 plotDat <- tstat_longDat %>% filter(valName %in% selected_DAs) %>%
-  slice(-which(group %in% c("iMED_2014_H3N2", 
-                            "ZirFlu_2019_Bvictoria", "ZirFlu_2019_Byamagata", "ZirFlu_2019_H3N2", 
-                            "ZirFlu_2020_Bvictoria", "ZirFlu_2020_H3N2"))) # remove some group if needed
+  slice(-which(group %in% c("2014_H3N2", 
+                            "2019_Bvictoria", "2019_Byamagata", "2019_H3N2", 
+                            "2020_Bvictoria", "2020_H3N2"))) # remove some group if needed
 
 plotDat_order <- get.plotDat_clusterRow(plotDat, 
                                         colName = "group", 
@@ -114,3 +115,6 @@ plotDat_order %>%
   scale_fill_gradient2(low = "blue", mid = "white", high = "red") + 
   theme_bw() + 
   theme(axis.text.x = element_text(angle = 30, hjust = 1))
+
+plotDat_DAPs <- plotDat_order
+save(plotDat_DAPs, file = "plotDat_DAPs.RData")

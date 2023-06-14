@@ -44,13 +44,13 @@ get.plotDat_clusterRow <- function(plotDat, colName, valColumn) {
 }
 
 # load data --------------------------------------------------------
-load("resPro_4reclass_2group.RData")
+load("resMebo_4reclass_2group.RData")
 
 # significant proteins / metabolites ---------------------------------------------------------
-DAs <- resPro_4reclass_2group %>% 
+DAs <- resMebo_4reclass_2group %>% 
   lapply(function(x) x %>% lapply(function(y) get.DAs(y)))
 
-tstat_dat <- resPro_4reclass_2group %>%
+tstat_dat <- resMebo_4reclass_2group %>%
   lapply(function(x) x %>% lapply(function(y) get.tstat(y)))
 
 # Check venn diagram ---------------------------------------------
@@ -87,8 +87,8 @@ tstat_all <- tstat_dat %>%
 
 tstat_longDat <- tstat_all %>%
   full_join(DAs_all) %>%
-  mutate(group = paste0(season, "_", strain)) %>%
-  separate(season, sep = "_", into = c("cohort", "season"))
+  separate(season, sep = "_", into = c("cohort", "season")) %>%
+  mutate(group = paste0(season, "_", strain))
 
 # selected DAs for the heat map
 # selected_DAs <- unique(c(intersect(res.venn$iMED_2015$H1N1_reclassify, res.venn$iMED_2015$H3N2_reclassify),
@@ -96,12 +96,12 @@ tstat_longDat <- tstat_all %>%
 #                          intersect(res.venn$iMED_2015$H1N1_reclassify, res.venn$iMED_2015$B_reclassify))) # DAs in at least 2 strains for iMED_2015
 # selected_DAs <- unique(unlist(res.venn$iMED_2015))
 selected_DAs <- unique(as.vector(unlist(res.venn)[which(duplicated(unlist(res.venn)))])) # DAs in at least twice acorss strain and season
-save(selected_DAs, file = "selected_DAPs.RData")
+#save(selected_DAs, file = "selected_DAMs.RData")
 # heatmap
 plotDat <- tstat_longDat %>% filter(valName %in% selected_DAs) %>%
-  slice(-which(group %in% c("iMED_2014_H3N2", 
-                            "ZirFlu_2019_Bvictoria", "ZirFlu_2019_Byamagata", "ZirFlu_2019_H3N2", 
-                            "ZirFlu_2020_Bvictoria", "ZirFlu_2020_H3N2"))) # remove some group if needed
+  slice(-which(group %in% c("2014_H3N2", 
+                            "2019_Bvictoria", "2019_Byamagata", "2019_H3N2", 
+                            "2020_Bvictoria", "2020_H3N2"))) # remove some group if needed
 
 plotDat_order <- get.plotDat_clusterRow(plotDat, 
                                         colName = "group", 

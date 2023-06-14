@@ -61,13 +61,13 @@ metadata_healthy <- cohorts$HAI_all %>%
   mutate_at(vars(contains("reclassify")), ~convert_protectees(.x)) %>%
   mutate_at(vars(contains("reclassify")), ~factor(.x, levels = c("LL", "protectee")))
 
-## run the limma model -------------------------
+## run lhe limma model -------------------------
 iMED_strains <- c("H1N1_reclassify", "H3N2_reclassify", "B_reclassify")
 ZirFlu_strains <- c("H1N1_reclassify", "H3N2_reclassify", "Bvictoria_reclassify", "Byamagata_reclassify")
 
 # iMED cohort 2014 
 metadat_iMED_2014 <- metadata_healthy %>% filter(season == "2014") 
-inputDat_iMED_2014 <- protein_Dat$iMED_2014 %>% t() %>% as.data.frame %>% select(metadat_iMED_2014$name)
+inputDat_iMED_2014 <- mebo_Dat$iMED_2014 %>% t() %>% as.data.frame %>% select(metadat_iMED_2014$name)
 # identical(colnames(inputDat_iMED_2014), metadat_iMED_2014$name) # TRUE, the same sample order
 
 res_iMED_2014 <- get.limmaRes_perStrain(metadat =  metadat_iMED_2014,
@@ -76,7 +76,7 @@ res_iMED_2014 <- get.limmaRes_perStrain(metadat =  metadat_iMED_2014,
 
 # iMED cohort 2015
 metadat_iMED_2015 <- metadata_healthy %>% filter(season == "2015") 
-inputDat_iMED_2015 <- protein_Dat$iMED_2015 %>% t() %>% as.data.frame %>% select(metadat_iMED_2015$name)
+inputDat_iMED_2015 <- mebo_Dat$iMED_2015 %>% t() %>% as.data.frame %>% select(metadat_iMED_2015$name)
 
 res_iMED_2015 <- get.limmaRes_perStrain(metadat =  metadat_iMED_2015,
                                         inputDat = inputDat_iMED_2015, 
@@ -84,7 +84,7 @@ res_iMED_2015 <- get.limmaRes_perStrain(metadat =  metadat_iMED_2015,
 
 # ZirFlu cohort 2019
 metadat_ZirFlu_2019 <- metadata_healthy %>% filter(season == "2019") 
-inputDat_ZirFlu_2019 <- protein_Dat$ZirFlu_2019 %>% t() %>% as.data.frame %>% select(metadat_ZirFlu_2019$name)
+inputDat_ZirFlu_2019 <- mebo_Dat$ZirFlu_2019 %>% t() %>% as.data.frame %>% select(metadat_ZirFlu_2019$name)
 # identical(colnames(inputDat_ZirFlu_2019), metadat_ZirFlu_2019$name) # TRUE, the same sample order
 
 res_ZirFlu_2019 <- get.limmaRes_perStrain(metadat =  metadat_ZirFlu_2019,
@@ -93,16 +93,16 @@ res_ZirFlu_2019 <- get.limmaRes_perStrain(metadat =  metadat_ZirFlu_2019,
 
 # ZirFlu cohort 2020
 metadat_ZirFlu_2020 <- metadata_healthy %>% filter(season == "2020") 
-inputDat_ZirFlu_2020 <- protein_Dat$ZirFlu_2020 %>% t() %>% as.data.frame %>% select(metadat_ZirFlu_2020$name)
+inputDat_ZirFlu_2020 <- mebo_Dat$ZirFlu_2020 %>% t() %>% as.data.frame %>% select(metadat_ZirFlu_2020$name)
 
 res_ZirFlu_2020 <- get.limmaRes_perStrain(metadat =  metadat_ZirFlu_2020,
                                           inputDat = inputDat_ZirFlu_2020, 
                                           strain_groups = ZirFlu_strains)
 
 # save data ------------------------------------------------
-resPro_4reclass_2group <- list("iMED_2014" = res_iMED_2014, 
+resMebo_4reclass_2group <- list("iMED_2014" = res_iMED_2014, 
                                "iMED_2015" = res_iMED_2015,
                                "ZirFlu_2019" = res_ZirFlu_2019,
                                "ZirFlu_2020" = res_ZirFlu_2020)
 
-save(resPro_4reclass_2group, file = "resPro_4reclass_2group.RData")
+save(resMebo_4reclass_2group, file = "resMebo_4reclass_2group.RData")

@@ -10,11 +10,11 @@ convert_protectees <- function(input) {
   return(outcome)
 }
 
-get.limmaRes <- function(metaDat, inputDat) {
-  # Aim: identify DE proteins/metabolites correct with sex, age, and reclassify (the interested vaccine response reclassification groups) 
+get.limmaRes_abT1 <- function(metaDat, inputDat) {
+  # Aim: identify DE proteins/metabolites correct with sex, age, abT1 
   #by running the linear model (limma package)
   
-  # input: metadata - interested participant (in "name" column) with sex, age, and reclassify group, 
+  # input: metadata - interested participant (in "name" column) with sex, age, and abT1
   #inputDat - data with participant in colnames and protein/metabolites in rownames (need to select only the intested participants)
   
   # output: res - limma output
@@ -23,7 +23,27 @@ get.limmaRes <- function(metaDat, inputDat) {
   
   if (identical(metaDat$name, colnames(inputDat_temp)) == TRUE) {
     res <- lmFit(inputDat_temp,
-                 design = model.matrix(~ + sex + age + reclassify, metaDat)) %>% 
+                 design = model.matrix(~ + sex + age + T1_log2, metaDat)) %>% 
+      eBayes()
+  } else res <- "Error: check input"
+  
+  return(res)
+}
+
+get.limmaRes_abFC <- function(metaDat, inputDat) {
+  # Aim: identify DE proteins/metabolites correct with sex, age, abFC 
+  #by running the linear model (limma package)
+  
+  # input: metadata - interested participant (in "name" column) with sex, age, and abT1
+  #inputDat - data with participant in colnames and protein/metabolites in rownames (need to select only the intested participants)
+  
+  # output: res - limma output
+  
+  inputDat_temp <- inputDat[, metaDat$name]
+  
+  if (identical(metaDat$name, colnames(inputDat_temp)) == TRUE) {
+    res <- lmFit(inputDat_temp,
+                 design = model.matrix(~ + sex + age + abFC_log2, metaDat)) %>% 
       eBayes()
   } else res <- "Error: check input"
   
@@ -41,10 +61,15 @@ get.limmaRes_perStrain <- function(metadat, inputDat, strain_groups) {
   
   resList <- list()
   for (strain_group in strain_groups) {
-    metadat_temp <- metadat %>% rename("reclassify" := strain_group) %>%
-      select(name, sex, age, reclassify) %>% drop_na()
+    metadat_temp <- metadat %>% 
+      select(name, sex, age, paste0(strain_group, c("_T1_log2", "_abFC_log2"))) %>% drop_na()
     
-    resList[[strain_group]] <- get.limmaRes(metadat_temp, inputDat)
+    names(metadat_temp) <- names(metadat_temp ) %>% 
+      gsub(paste0(strain_group, "_" ), "", .)
+    
+    
+    resList[[strain_group]]$abT1 <- get.limmaRes_abT1(metadat_temp, inputDat)
+    resList[[strain_group]]$abFC <- get.limmaRes_abFC(metadat_temp, inputDat)
   }
   return(resList)
 }
@@ -61,9 +86,9 @@ metadata_healthy <- cohorts$HAI_all %>%
   mutate_at(vars(contains("reclassify")), ~convert_protectees(.x)) %>%
   mutate_at(vars(contains("reclassify")), ~factor(.x, levels = c("LL", "protectee")))
 
-## run the limma model -------------------------
-iMED_strains <- c("H1N1_reclassify", "H3N2_reclassify", "B_reclassify")
-ZirFlu_strains <- c("H1N1_reclassify", "H3N2_reclassify", "Bvictoria_reclassify", "Byamagata_reclassify")
+## run lhe limma model -------------------------
+iMED_strains <- c("H1N1", "H3N2", "B")
+ZirFlu_strains <- c("H1N1", "H3N2", "Bvictoria", "Byamagata")
 
 # iMED cohort 2014 
 metadat_iMED_2014 <- metadata_healthy %>% filter(season == "2014") 
@@ -100,9 +125,10 @@ res_ZirFlu_2020 <- get.limmaRes_perStrain(metadat =  metadat_ZirFlu_2020,
                                           strain_groups = ZirFlu_strains)
 
 # save data ------------------------------------------------
-resPro_4reclass_2group <- list("iMED_2014" = res_iMED_2014, 
-                               "iMED_2015" = res_iMED_2015,
-                               "ZirFlu_2019" = res_ZirFlu_2019,
-                               "ZirFlu_2020" = res_ZirFlu_2020)
+resPro_abT1_abFC <- list(
+  "iMED_2014" = res_iMED_2014, 
+  "iMED_2015" = res_iMED_2015,
+  "ZirFlu_2019" = res_ZirFlu_2019,
+  "ZirFlu_2020" = res_ZirFlu_2020)
 
-save(resPro_4reclass_2group, file = "resPro_4reclass_2group.RData")
+save(resPro_abT1_abFC, file = "resPro_abT1_abFC.RData")
