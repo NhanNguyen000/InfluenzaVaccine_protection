@@ -15,6 +15,6 @@ plink2 --vcf /vol/projects/CIIM/Influenza/iMED/genotype/genotypes_combined_new/q
 
 # B
 plink2 --vcf /vol/projects/CIIM/Influenza/iMED/genotype/genotypes_combined_new/qtl_mapping/iMED_vcf.vcf \
---pheno iid-only /vol/projects/BIIM/Influenza/ZirrFlu/InfluenzaCohorts_NhanNguyen/sendOut/iMED_pheno_H3N2.txt \
+--pheno iid-only /vol/projects/BIIM/Influenza/ZirrFlu/InfluenzaCohorts_NhanNguyen/sendOut/iMED_pheno_B.txt \
 --glm allow-no-covars \
 --1

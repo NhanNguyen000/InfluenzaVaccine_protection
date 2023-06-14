@@ -31,7 +31,7 @@ get.elasticModel <- function(train_inputSet, train_predOut,
                     y = train_predOut,
                     method = "glmnet", 
                     #metric = 'Accuracy', # for classification
-                    metric = "Kappa",
+                    metric = "Kappa", # similar to classification accuracy but it is useful to normalize the imbalance in classes
                     tuneGrid=expand.grid(.alpha = seq(0.1,0.9, by=0.1),
                                          .lambda = seq(0,1,by=0.01)),
                     trControl = trainControl(method="repeatedcv",
@@ -75,43 +75,7 @@ metadata_healthy <- cohorts$HAI_all %>%
   mutate_at(vars(contains("reclassify")), ~factor(.x, levels = c("LL", "protectee"))) %>%
   mutate(sex = ifelse(sex == "m", 0, 1))
 
-
-## prepare the protein and metabolite data -------------------------
-# # iMED cohort 2014 
-# metadat_iMED_2014 <- metadata_healthy %>% filter(season == "2014") 
-# 
-# inputDat_iMED_2014 <- protein_Dat$iMED_2014 %>% as.data.frame %>% rownames_to_column("name") %>%
-#   full_join(mebo_Dat$iMED_2014 %>% as.data.frame %>% rownames_to_column("name")) %>%
-#   column_to_rownames("name") %>% t() %>% as.data.frame %>% select(metadat_iMED_2014$name)
-# # identical(colnames(inputDat_iMED_2014), metadat_iMED_2014$name) # TRUE, the same sample order
-# 
-# 
-# # iMED cohort 2015
-# metadat_iMED_2015 <- metadata_healthy %>% filter(season == "2015") 
-# 
-# inputDat_iMED_2015 <- protein_Dat$iMED_2015 %>% as.data.frame %>% rownames_to_column("name") %>%
-#   full_join(mebo_Dat$iMED_2015 %>% as.data.frame %>% rownames_to_column("name")) %>%
-#   column_to_rownames("name") %>% t() %>% as.data.frame %>% select(metadat_iMED_2015$name)
-# # identical(colnames(inputDat_iMED_2015), metadat_iMED_2015$name) # TRUE, the same sample order
-# 
-# # ZirFlu cohort 2019
-# metadat_ZirFlu_2019 <- metadata_healthy %>% filter(season == "2019") 
-# 
-# inputDat_ZirFlu_2019 <- protein_Dat$ZirFlu_2019 %>% as.data.frame %>% rownames_to_column("name") %>%
-#   full_join(mebo_Dat$ZirFlu_2019 %>% as.data.frame %>% rownames_to_column("name")) %>%
-#   column_to_rownames("name") %>% t() %>% as.data.frame %>% select(metadat_ZirFlu_2019$name)
-# # identical(colnames(inputDat_ZirFlu_2019), metadat_ZirFlu_2019$name) # TRUE, the same sample order
-# 
-# # ZirFlu cohort 2020
-# metadat_ZirFlu_2020 <- metadata_healthy %>% filter(season == "2020") 
-# 
-# inputDat_ZirFlu_2020 <- protein_Dat$ZirFlu_2020 %>% as.data.frame %>% rownames_to_column("name") %>%
-#   full_join(mebo_Dat$ZirFlu_2020 %>% as.data.frame %>% rownames_to_column("name")) %>%
-#   column_to_rownames("name") %>% t() %>% as.data.frame %>% select(metadat_ZirFlu_2020$name)
-# # identical(colnames(inputDat_ZirFlu_2020), metadat_ZirFlu_2020$name) # TRUE, the same sample order
-
-
-# impute protein data --------------------------------
+## impute protein data --------------------------------
 # check NAs percentage
 get.rmProteins <- function(dat, NA_cutoff) {
   # Description: identify variable have more missing value (NA) than the NA threshold (NA cutoff)
@@ -141,11 +105,9 @@ for (season in names(protein_Dat)) {
     mutate_if(is.numeric, function(x) ifelse(is.na(x), median(x, na.rm = TRUE), x))
 }
 
-# testing code ------------------
+# prepare input data ------------------------------------------------------
 inputDat <- proteinDat_impute %>% purrr::reduce(rbind) %>% 
-  cbind(mebo_Dat %>% 
-          lapply(function(x) x %>% select(-matches("_2"))) %>% 
-          purrr::reduce(rbind)) %>%
+  cbind(mebo_Dat %>% purrr::reduce(rbind)) %>%
   as.data.frame %>% rownames_to_column("name")
 
 dat_temp <- metadata_healthy %>% left_join(inputDat)
@@ -226,4 +188,4 @@ for (inputVal in names(inputVariables)) {
 
 # save the result -----------------------
 save(res.elasticModel, 
-     file = "20230522_res.elasticModel.RData")
+     file = "res.elasticModel.RData")
