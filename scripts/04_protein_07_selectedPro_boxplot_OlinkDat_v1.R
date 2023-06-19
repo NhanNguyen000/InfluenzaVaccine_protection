@@ -18,25 +18,34 @@ inputDat <- protein_Dat %>%
   purrr::reduce(full_join) %>% right_join(metadata_healthy)
 
 # boxplot ================================
-my_comparisons <- list( c("R", "NR") )
-my_comparisons_v1 <- list( c("NR", "Other"), c("Other", "TR"), c("NR", "TR") )
-my_comparisons_v2 <- list( c("LL", "LH"), c("LL", "HL"), c("LL", "HH"))
+compare_responder <- list( c("NR", "Other"), c("Other", "TR"), c("NR", "TR") )
+compare_reClass <- list( c("LL", "LH"), c("LL", "HL"), c("LL", "HH"))
+compare_abFC <- list(c("R", "NR"))
+compare_abT1 <- list(c("low", "high"))
 
 protein <- "CD83"
 metadat_boxplot <- inputDat %>% 
   select(season, responder, c(protein), matches("_abFC|_T1|_T4|_reclassify")) %>%
-  mutate(H1N1_class = ifelse(H1N1_reclassify == "LH" |H1N1_reclassify == "HH", "R", "NRs"))
+  mutate(H1N1_abFC = ifelse(H1N1_reclassify == "LH" |H1N1_reclassify == "HH", "R", "NR")) %>%
+  mutate(H1N1_abBaseline = ifelse(H1N1_T1 > 40, "high", "low")) %>%
+  mutate(H1N1_abBaseline = factor(H1N1_abBaseline, levels = c("low", "high")))
 
-ggboxplot(metadat_boxplot, x = "H1N1_class", y = protein,
-          paletter = "jco", add = "jitter") + facet_wrap(~season, nrow = 1) + 
-  stat_compare_means(comparisons = my_comparisons, method = "t.test")
-
-ggboxplot(metadat_boxplot, x = "responder", y = protein,
-          paletter = "jco", add = "jitter") + facet_wrap(~season, nrow = 1) + 
-  stat_compare_means(comparisons = my_comparisons_v1s, method = "t.test")
-
+# based on reclassification 
 ggboxplot(metadat_boxplot, x = "H1N1_reclassify", y = protein,
           paletter = "jco", add = "jitter") + facet_wrap(~season, nrow = 1) +
-  stat_compare_means(comparisons = my_comparisons_v2, method = "t.test")
+  stat_compare_means(comparisons = compare_reClass, method = "t.test")
 
+# based on abFC: NR vs R
+ggboxplot(metadat_boxplot, x = "H1N1_abFC", y = protein,
+          paletter = "jco", add = "jitter") + facet_wrap(~season, nrow = 1) + 
+  stat_compare_means(comparisons = compare_abFC, method = "t.test")
 
+# based on abT1: low Ab vs high Ab
+ggboxplot(metadat_boxplot, x = "H1N1_abBaseline", y = protein,
+          paletter = "jco", add = "jitter") + facet_wrap(~season, nrow = 1) + 
+  stat_compare_means(comparisons = compare_abT1, method = "t.test")
+
+# based on responders group: NR, other, TR
+ggboxplot(metadat_boxplot, x = "responder", y = protein,
+          paletter = "jco", add = "jitter") + facet_wrap(~season, nrow = 1) + 
+  stat_compare_means(comparisons = compare_responder, method = "t.test")
