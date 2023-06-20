@@ -2,6 +2,7 @@ rm(list = ls())
 
 library(tidyverse)
 library(ggpubr)
+library(rstatix)
 # load data =======================================================================
 load("cohorts_dat.RData")
 
@@ -20,41 +21,45 @@ inputDat <- protein_Dat %>%
 # boxplot ================================
 protein <- "CD83"
 metadat_boxplot <- inputDat %>% 
-  select(season, responder, time, c(protein), matches("_abFC|_T1|_T4|_reclassify")) 
-
+  select(probandID, season, responder, time, c(protein), matches("_abFC|_T1|_T4|_reclassify")) %>%
+  filter(time %in% c("T1", "T4"))
 
 ggboxplot(metadat_boxplot, x = "H1N1_reclassify", y = protein, color = "time",
-          paletter = "jco", add = "jitter") + facet_wrap(~season, nrow = 1) #+
-  stat_compare_means(comparisons = compare_reClass, method = "t.test")
+          paletter = "jco", add = "jitter") + facet_wrap(~season, nrow = 1)
 
-compare_responder <- list( c("NR", "Other"), c("Other", "TR"), c("NR", "TR") )
-compare_reClass <- list( c("LL", "LH"), c("LL", "HL"), c("LL", "HH"))
-compare_abFC <- list(c("R", "NR"))
-compare_abT1 <- list(c("low", "high"))
+ggboxplot(metadat_boxplot, x = "H1N1_reclassify", y = protein, 
+          color = "time", 
+          paletter = "jco", add = "jitter") + facet_wrap(~season, nrow = 1)
+# compare 2 independent samples -------------------
+compare_means(CD83 ~ time, data = metadat_boxplot, 
+              group.by = c("season", "H1N1_reclassify"), method = "wilcox.test") # no sig. (same result as using t.test, kruskal.tests) 
 
-protein <- "CD83"
-metadat_boxplot <- inputDat %>% 
-  select(season, responder, c(protein), matches("_abFC|_T1|_T4|_reclassify")) %>%
-  mutate(H1N1_abFC = ifelse(H1N1_reclassify == "LH" |H1N1_reclassify == "HH", "R", "NR")) %>%
-  mutate(H1N1_abBaseline = ifelse(H1N1_T1 > 40, "high", "low")) %>%
-  mutate(H1N1_abBaseline = factor(H1N1_abBaseline, levels = c("low", "high")))
-
-# based on reclassification 
-ggboxplot(metadat_boxplot, x = "H1N1_reclassify", y = protein,
+ggboxplot(metadat_boxplot, x = "H1N1_reclassify", y = protein, color = "time",
           paletter = "jco", add = "jitter") + facet_wrap(~season, nrow = 1) +
-  stat_compare_means(comparisons = compare_reClass, method = "t.test")
+  stat_compare_means(label = "p.signif")
 
-# based on abFC: NR vs R
-ggboxplot(metadat_boxplot, x = "H1N1_abFC", y = protein,
-          paletter = "jco", add = "jitter") + facet_wrap(~season, nrow = 1) + 
-  stat_compare_means(comparisons = compare_abFC, method = "t.test")
+# compare 2 dependent samples ----------------------
+metadat_boxplot2 <- metadat_boxplot %>% add_count(probandID) %>% filter(n == 2)
+compare_means(CD83 ~ time, data = metadat_boxplot2, 
+              group.by = c("season", "H1N1_reclassify"), method = "wilcox.test", paired = TRUE)
 
-# based on abT1: low Ab vs high Ab
-ggboxplot(metadat_boxplot, x = "H1N1_abBaseline", y = protein,
-          paletter = "jco", add = "jitter") + facet_wrap(~season, nrow = 1) + 
-  stat_compare_means(comparisons = compare_abT1, method = "t.test")
+t.test(CD83 ~time, data = metadat_boxplot2, paired = TRUE)
 
-# based on responders group: NR, other, TR
-ggboxplot(metadat_boxplot, x = "responder", y = protein,
-          paletter = "jco", add = "jitter") + facet_wrap(~season, nrow = 1) + 
-  stat_compare_means(comparisons = compare_responder, method = "t.test")
+metadat_boxplot2 %>% 
+  group_by(season, H1N1_reclassify) %>% summarise(p_paired.test = t.test(CD83 ~ time)$p.value)
+stat.test <- metadat_boxplot2 %>% group_by(season, H1N1_reclassify) %>% t_test(CD83 ~ time) # show the same p.value result as the above command
+
+# add non sig. paired t_test to the graph
+stat.test <- metadat_boxplot2 %>% 
+  group_by(season, H1N1_reclassify) %>%  t_test(CD83 ~ time) %>% 
+  add_xy_position() %>% add_significance() %>%
+  mutate(xmin = ifelse(H1N1_reclassify == "LL", 0.9, 
+                       ifelse(H1N1_reclassify == "LH", 1.9,
+                              ifelse(H1N1_reclassify == "HL", 2.9, 3.9))),
+         xmax = ifelse(H1N1_reclassify == "LL", 1.1, 
+                       ifelse(H1N1_reclassify == "LH", 2.1,
+                              ifelse(H1N1_reclassify == "HL", 3.1, 4.1))))
+
+bxp <- ggboxplot(metadat_boxplot, x = "H1N1_reclassify", y = protein, color = "time",
+                 paletter = "jco", add = "jitter") + facet_wrap(~season, nrow = 1)
+bxp + stat_pvalue_manual(stat.test, label = "p.signif")s
