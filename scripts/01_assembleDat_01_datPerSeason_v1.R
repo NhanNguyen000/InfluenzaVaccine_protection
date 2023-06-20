@@ -60,7 +60,10 @@ cohorts$donorSample_all <- iMED$meta2014 %>%
   # iMED discovery cohort (n = 200)
   full_join(iMED$meta2015 %>% 
       select(probandID, ProbenID, name, time) %>% mutate(season = "2015")) %>% 
-  mutate(cohort = "iMED") %>%
+  mutate(cohort = "iMED",
+         time = ifelse(time == "T1", "T1",
+                       ifelse(time == "T2", "T3",
+                              ifelse(time == "T3", "T4", NA)))) %>% # time T2 and T3 in protein data matched to time T3 (1 week) and T4 (4 weeks) in HAI titer
   
   # ZirFlu cohort, 2 seasons
   full_join(
