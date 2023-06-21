@@ -176,6 +176,11 @@ protein_Dat$ZirFlu_2020 <- protein_normDat$ZirFlu[
 # metabolites ---------------------------------------
 overlapped_metabolites <- intersect(unique(iMED_meboAnnot$Formula), ZirFlu_meboAnnot$Formula)
 length(overlapped_metabolites)
+
+library(venn)
+res.venn <- DAs %>% lapply(function(x) x %>% lapply(function(y) rownames(y)))
+v.table <- venn(res.venn$iMED_2014)
+
 # iMED has 1326 metabolites (with 1345 metabolite Idx), ZirFlu has 786 metabolites -> overlapped metabolites: 508 metabolites
 
 mebo_Dat <- list()

@@ -1,5 +1,7 @@
 rm(list = ls())
 library(tidyverse)
+library(openxlsx)
+library(fgsea)
 
 get.tstat <- function(resLimma) {
   # Aim: extract the t-statistic value from linnear comparision comparison
@@ -25,12 +27,12 @@ mebo_taxo_fomula <- mebo_taxo %>% rownames_to_column("CompoundID") %>%
   filter(Formula %in% colnames(mebo_Dat$iMED_2014)) %>%
   select(Formula, super_class, class, sub_class) %>% distinct()
 
-length(unique(mebo_taxo_fomula$Formula)) # 499 formulas out of 508 formulas in mebo_Dat$iMED_2014
+length(unique(mebo_taxo_fomula$Formula)) # 499 formulas out of 508 formulas
 
 mebo_taxo_fomula %>% count(super_class)
 mebo_taxo_fomula %>% count(class)
 
-# make the class to run the GSEA ------------------------------------------------
+# make the class 
 mebo_taxo_class <- mebo_taxo_fomula %>% select(Formula, class) %>% distinct()
 mebo_classSet <- split(mebo_taxo_class$Formula, mebo_taxo_class$class)
 
@@ -84,3 +86,22 @@ gsea_plot %>%
   geom_point() + 
   facet_grid(season ~., scales = "free_y", space = "free") + 
   xlim(c(0, 3)) + theme_bw()
+
+# plot the heatmap --------------------------------
+seleted_pathways <- gsea_total %>% filter(padj < 0.05) %>% 
+  select(pathway) %>% distinct() %>% unlist()
+
+plotDat <- gsea_total %>% 
+  filter(pathway %in% seleted_pathways) %>%
+  separate(col = "season", into = c("cohort", "year")) %>%
+  mutate(strain = gsub("_reclassify", "", strain)) %>%
+  mutate(group = paste0(year, "_", strain))
+
+plotDat %>%
+  ggplot(aes(x = group, y = pathway, fill = NES)) + 
+  geom_tile() +
+  geom_text(aes(label = ifelse(padj < 0.05, "*", NA))) +
+  scale_fill_gradientn(limits = c(-3, 3), colors = c("blue", "white", "red"), na.value = "grey") +
+  theme_bw() + 
+  theme(axis.text.x = element_text(angle = 30, hjust = 1))  + 
+  ggtitle("Metabolite taxonomy class (padj < 0.05)")
