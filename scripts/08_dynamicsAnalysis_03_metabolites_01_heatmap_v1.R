@@ -50,6 +50,31 @@ allMeboChangingSigni <- list(
 
 mebos <- unique(unlist(allMeboChangingSigni))
 
+mebos_comparison <- allMeboChangingSigni %>% 
+  lapply(function(x) x %>% as.data.frame) %>% 
+  bind_rows(.id = "compare") %>% rename("valName" = ".") %>% 
+  add_count(valName)
+mebos_sigAll <- unique((mebos_comparison %>% filter(n == 8))$valName)
+
+## select sig.dynamic metabolites for LL group - Upset plot ----------------
+venn::venn(allMeboChangingSigni)
+library(UpSetR)
+
+upset(fromList(allMeboChangingSigni), 
+      # sets = c("LL_T2vsT1", "LH_T2vsT1", "HL_T2vsT1", "HH_T2vsT1",
+      #         "LL_T3vsT1", "LH_T3vsT1", "HL_T3vsT1", "HH_T3vsT1"),
+      sets = c("LL_T2vsT1", "LL_T3vsT1", "LH_T2vsT1", "LH_T3vsT1", 
+               "HL_T2vsT1", "HL_T3vsT1", "HH_T2vsT1", "HH_T3vsT1"),
+      empty.intersections = "on", 
+      order.by = "freq", 
+      keep.order = TRUE)
+
+sigMebos_LL <- mebos_comparison %>% 
+  filter(n <= 2) %>% select(-n) %>%
+  slice(grep("LL", compare)) %>% add_count(valName)
+# C3H6O4, C8H8O5
+
+## plot data  ---------------- ---------------- ----------------
 plotDat <- inputDat %>% 
   select(probandID, season, responder, time, c(mebos),
          matches("_abFC|_T1|_T4|_reclassify"))
@@ -97,7 +122,9 @@ allMeboChangingTstat <- list(
   lapply(function(x) x %>% rownames_to_column("valName")) %>%
   bind_rows(.id = "group")
 
-plotDat <- allMeboChangingTstat %>% filter(valName %in% mebos) %>%
+plotDat <- allMeboChangingTstat %>% 
+  #filter(valName %in% mebos) %>%
+  filter(valName %in% mebos_sigAll) %>%
   mutate(group = factor(group, 
                         levels = c("LL_T2vsT1", "LL_T3vsT1", 
                                    "LH_T2vsT1", "LH_T3vsT1", 
