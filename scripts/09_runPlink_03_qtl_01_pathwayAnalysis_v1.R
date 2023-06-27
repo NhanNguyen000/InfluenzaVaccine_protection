@@ -69,6 +69,13 @@ qtl_sigPathway  %>% filter(P < 0.05) %>%
   theme_bw() + theme(axis.text = element_text(size = 11)) +
   xlim(0, 3)
 
+#vocano plot
+qtl_all %>% filter(P < 0.05) %>% 
+  ggplot(aes(x = BETA_STD, y = -log10(P))) +
+  geom_point() +
+  geom_hline(yintercept = -log10(0.05), linetype = "dashed") +
+  xlim(0, 0.05) + theme_bw()
+
 # SNPs =================================================
 load("loci_info_qtl.RData")
 

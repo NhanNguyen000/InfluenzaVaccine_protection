@@ -178,8 +178,9 @@ overlapped_metabolites <- intersect(unique(iMED_meboAnnot$Formula), ZirFlu_meboA
 length(overlapped_metabolites)
 
 library(venn)
-res.venn <- DAs %>% lapply(function(x) x %>% lapply(function(y) rownames(y)))
-v.table <- venn(res.venn$iMED_2014)
+res.venn <- list("Season 2014 and 2015" =s unique(iMED_meboAnnot$Formula), 
+                 "Season 2019 and 2020" = ZirFlu_meboAnnot$Formula)
+v.table <- venn(res.venn)
 
 # iMED has 1326 metabolites (with 1345 metabolite Idx), ZirFlu has 786 metabolites -> overlapped metabolites: 508 metabolites
 

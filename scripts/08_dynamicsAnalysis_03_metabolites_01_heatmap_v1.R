@@ -55,6 +55,7 @@ plotDat <- inputDat %>%
          matches("_abFC|_T1|_T4|_reclassify"))
 
 # heatmap based on expression -------------------------------------------------
+## all season -------------------------
 plotDat_H1N1 <- plotDat %>% 
   pivot_longer(cols = mebos, names_to = "valName", values_to =  "intensity") %>%
   mutate(group = paste0(season, "_", H1N1_reclassify, "_", time)) %>%
@@ -83,6 +84,7 @@ plotDat_H1N1 %>%
   theme(axis.text.x = element_text(angle = 30, hjust = 1)) + 
   ggtitle("Sig. metabolite in dynamic analysis, show in H1N1 strain")
 # heatmap based on t-stat -------------------------------------------------
+## seasons 2015 ---------------------------------
 allMeboChangingTstat <- list(
   "LL_T2vsT1" = LL_T2vsT1_metabol %>% select(t),
   "LL_T3vsT1" = LL_T3vsT1_metabol %>% select(t),

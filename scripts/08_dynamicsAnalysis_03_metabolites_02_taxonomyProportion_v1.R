@@ -43,7 +43,7 @@ sigMebos_taxo <- sigMebos %>%
   left_join(mebo_taxo_fomula, by = c("valName" = "Formula"), relationship = "many-to-many")
 
 # stack plot absolute count
-sigMebos_taxo2 <- sigMebos_taxo %>% add_count(group, class) %>%
+sigMebos_taxo_v2 <- sigMebos_taxo %>% add_count(group, class) %>%
   mutate(metabolite_class = ifelse(n >= 10, class, "other")) %>%
   mutate(group = factor(group, 
                         levels = c("LL_T2vsT1", "LL_T3vsT1", 
@@ -51,27 +51,28 @@ sigMebos_taxo2 <- sigMebos_taxo %>% add_count(group, class) %>%
                                    "HL_T2vsT1", "HL_T3vsT1", 
                                    "HH_T2vsT1", "HH_T3vsT1")))
 
-sigMebos_taxo2 %>%
-  ggplot(aes(fill = metabolite_class, x = group)) + 
+sigMebos_taxo_v2 %>%
+  ggplot(aes(x = group, fill = metabolite_class)) + 
   geom_bar()
 
 # stake plot percentage
-sigMebos_taxo3 <- sigMebos_taxo2 %>%
-  add_count(group, metabolite_class, name = "n_class") %>% 
-  add_count(group, name = "total_perGroup") %>%
-  select(group, metabolite_class, n_class, total_perGroup) %>% distinct() %>% 
-  mutate(prop = round(n_class/ total_perGroup, digits = 2))  %>%
+sigMebos_taxo_v2_pct <- sigMebos_taxo_v2 %>%
+  select(group, metabolite_class, valName) %>% distinct() %>%
+  count(group, metabolite_class) %>%
+  group_by(group) %>%
+  mutate(prop = prop.table(n) * 100) %>%
   mutate(group = factor(group, 
                         levels = c("LL_T2vsT1", "LL_T3vsT1", 
                                    "LH_T2vsT1", "LH_T3vsT1", 
                                    "HL_T2vsT1", "HL_T3vsT1", 
                                    "HH_T2vsT1", "HH_T3vsT1")))
 
-sigMebos_taxo3 %>%
-  ggplot(aes(fill = metabolite_class, x = group, y = prop)) + 
+sigMebos_taxo_v2_pct %>%
+  ggplot(aes(x = group, y = prop, fill = metabolite_class)) + 
   geom_bar(stat = "identity") +
   theme_bw() + 
   theme(axis.text.x = element_text(angle = 30, hjust = 1))
+
 
 # check the positive and negative direction separately ---------------------
 allMeboChangingTstat <- list(
@@ -100,18 +101,26 @@ neg_Mebos <- allMeboChangingTstat_selected %>% filter(t < 0)
 pos_Mebos <- allMeboChangingTstat_selected %>% filter(t > 0)
 
 
-# stake plot percentage
+# stake plot percentage ---------------------------------------------
+#dat_temp <- pos_Mebos
 dat_temp <- neg_Mebos
-dat_temp <- pos_Mebos
 
-plotDat <- dat_temp %>%
-  add_count(group, metabolite_class, name = "n_class") %>% 
-  add_count(group, name = "total_perGroup") %>%
-  select(group, metabolite_class, n_class, total_perGroup) %>% distinct() %>% 
-  mutate(prop = round(n_class/ total_perGroup, digits = 2))
+plotDat_pct <- dat_temp %>%
+  select(group, metabolite_class, valName) %>% distinct() %>%
+  count(group, metabolite_class) %>% group_by(group) %>%
+  mutate(prop = prop.table(n) * 100) %>%
+  mutate(group = factor(group, 
+                        levels = c("LL_T2vsT1", "LH_T2vsT1", "HL_T2vsT1", "HH_T2vsT1",
+                                   "LL_T3vsT1", "LH_T3vsT1", "HL_T3vsT1", "HH_T3vsT1")))
 
-plotDat %>%
-  ggplot(aes(fill = metabolite_class, x = group, y = prop)) + 
+plotDat_pct %>% slice(grep("T2", group)) %>%
+  ggplot(aes(x = group, y = prop, fill = metabolite_class)) + 
+  geom_bar(stat = "identity") +
+  theme_bw() + 
+  theme(axis.text.x = element_text(angle = 30, hjust = 1))
+
+plotDat_pct %>% slice(grep("T3", group)) %>%
+  ggplot(aes(x = group, y = prop, fill = metabolite_class)) + 
   geom_bar(stat = "identity") +
   theme_bw() + 
   theme(axis.text.x = element_text(angle = 30, hjust = 1))
