@@ -15,6 +15,12 @@ loci <- sig_SNIPs %>%
   bind_rows(.id = "strain") %>% filter(SNP != ".") %>%
   dplyr::rename('rsid' = SNP, 'pval'= p)
 
+write.table(loci %>% filter(pval < 5e-8), file = "sendOut/qtl_sigSNPs_H3N2.txt", 
+            row.names = FALSE, quote = FALSE)
+
+write.table((loci %>% filter(pval < 5e-8))$rsid,
+            file = "sendOut/qtl_sigSNPs_H3N2_onlyRsid.txt", 
+            col.names = FALSE, row.names = FALSE, quote = FALSE)
 ## info for sig. SNPs --------------------------------------
 load("loci_info_qtl.RData")
 
