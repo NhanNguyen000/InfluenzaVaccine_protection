@@ -52,8 +52,10 @@ mebos <- unique(unlist(allMeboChangingSigni))
 
 mebos_comparison <- allMeboChangingSigni %>% 
   lapply(function(x) x %>% as.data.frame) %>% 
-  bind_rows(.id = "compare") %>% rename("valName" = ".") %>% 
-  add_count(valName)
+  bind_rows(.id = "group") %>% rename("valName" = ".") %>% 
+  add_count(valName) %>% mutate(sigPvalue = TRUE)
+#save(mebos_comparison, file = "meboDynamic_season2015.RData")
+
 mebos_sigAll <- unique((mebos_comparison %>% filter(n == 8))$valName)
 
 ## select sig.dynamic metabolites for LL group - Upset plot ----------------
@@ -123,13 +125,15 @@ allMeboChangingTstat <- list(
   bind_rows(.id = "group")
 
 plotDat <- allMeboChangingTstat %>% 
-  #filter(valName %in% mebos) %>%
-  filter(valName %in% mebos_sigAll) %>%
+  filter(valName %in% mebos) %>%
+  #filter(valName %in% mebos_sigAll) %>%
   mutate(group = factor(group, 
                         levels = c("LL_T2vsT1", "LL_T3vsT1", 
                                    "LH_T2vsT1", "LH_T3vsT1", 
                                    "HL_T2vsT1", "HL_T3vsT1", 
-                                   "HH_T2vsT1", "HH_T3vsT1")))
+                                   "HH_T2vsT1", "HH_T3vsT1"))) %>%
+  left_join(mebos_comparison)
+
 
 plotDat %>%
   ggplot(aes(x = group, y = valName, fill = t)) + 
@@ -142,8 +146,14 @@ plotDat_order <- get.plotDat_clusterRow(plotDat,
                                         colName = "group", 
                                         valColumn = "t")
 plotDat_order %>%
+  mutate(group = factor(group, 
+                        levels = c("LL_T2vsT1", "LL_T3vsT1", 
+                                   "LH_T2vsT1", "LH_T3vsT1", 
+                                   "HL_T2vsT1", "HL_T3vsT1", 
+                                   "HH_T2vsT1", "HH_T3vsT1"))) %>%
   ggplot(aes(x = group, y = valName, fill = t)) + 
   geom_tile() +
   scale_fill_gradientn(limits = c(-8, 8), colors = c("blue", "white", "red"),  na.value = "grey") +
+  geom_text(aes(label = ifelse(is.na(sigPvalue), NA, "*"))) +
   theme_bw() + 
   theme(axis.text.x = element_text(angle = 30, hjust = 1))

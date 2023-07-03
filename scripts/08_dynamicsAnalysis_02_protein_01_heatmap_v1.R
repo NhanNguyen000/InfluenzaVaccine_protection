@@ -39,15 +39,33 @@ inputDat <- protein_Dat %>%
   purrr::reduce(full_join) %>% right_join(metadata_healthy)
 
 # sig. proteins  ================================
-proteins <- unique(unlist(allProtsChangingSigni))
+allProChangingSigni <- list(
+  "LL_T2vsT1" = rownames(LL_T2vsT1_prot %>% filter(adj.P.Val < 0.05)),
+  "LL_T3vsT1" = rownames(LL_T3vsT1_prot %>% filter(adj.P.Val < 0.05)),
+  "LH_T2vsT1" = rownames(LH_T2vsT1_prot %>% filter(adj.P.Val < 0.05)),
+  "LH_T3vsT1" = rownames(LH_T3vsT1_prot %>% filter(adj.P.Val < 0.05)),
+  "HL_T2vsT1" = rownames(HL_T2vsT1_prot %>% filter(adj.P.Val < 0.05)),
+  "HL_T3vsT1" = rownames(HL_T3vsT1_prot %>% filter(adj.P.Val < 0.05)),
+  "HH_T2vsT1" = rownames(HH_T2vsT1_prot %>% filter(adj.P.Val < 0.05)),
+  "HH_T3vsT1" = rownames(HH_T3vsT1_prot %>% filter(adj.P.Val < 0.05)))
+
+proteins <- unique(unlist(allProChangingSigni))
+proteins_v2 <- proteins[!proteins == "CXCL14"] # exclude CXCL14 that is detected only in season 2014, 2015
+
+proteins_comparison <- allProChangingSigni %>% 
+  lapply(function(x) x %>% as.data.frame) %>% 
+  bind_rows(.id = "group") %>% rename("valName" = ".") %>% 
+  add_count(valName) %>% mutate(sigPvalue = TRUE)
+#save(proteins_comparison, file = "proDynamic_season2015.RData")
 
 plotDat <- inputDat %>% 
-  select(probandID, season, responder, time, c(proteins),
+  select(probandID, season, responder, time, c(proteins_v2),
          matches("_abFC|_T1|_T4|_reclassify"))
+
 
 # heatmap based on expression -------------------------------------------------
 plotDat_H1N1 <- plotDat %>% 
-  pivot_longer(cols = proteins, names_to = "valName", values_to =  "intensity") %>%
+  pivot_longer(cols = proteins_v2, names_to = "valName", values_to =  "intensity") %>%
   mutate(group = paste0(season, "_", H1N1_reclassify, "_", time)) %>%
   mutate(group = factor(group, 
                         levels = c("2014_LL_T1", "2014_LL_T3", "2014_LL_T4",
@@ -88,12 +106,13 @@ allProChangingTstat <- list(
   lapply(function(x) x %>% rownames_to_column("valName")) %>%
   bind_rows(.id = "group")
 
-plotDat <- allProChangingTstat %>% filter(valName %in% proteins) %>%
+plotDat <- allProChangingTstat %>% filter(valName %in% proteins_v2) %>%
   mutate(group = factor(group, 
                         levels = c("LL_T2vsT1", "LL_T3vsT1", 
                                    "LH_T2vsT1", "LH_T3vsT1", 
                                    "HL_T2vsT1", "HL_T3vsT1", 
-                                   "HH_T2vsT1", "HH_T3vsT1")))
+                                   "HH_T2vsT1", "HH_T3vsT1"))) %>% 
+  left_join(proteins_comparison)
 
 plotDat %>%
   ggplot(aes(x = group, y = valName, fill = t)) + 
@@ -106,8 +125,14 @@ plotDat_order <- get.plotDat_clusterRow(plotDat,
                                         colName = "group", 
                                         valColumn = "t")
 plotDat_order %>%
+  mutate(group = factor(group, 
+                        levels = c("LL_T2vsT1", "LL_T3vsT1", 
+                                   "LH_T2vsT1", "LH_T3vsT1", 
+                                   "HL_T2vsT1", "HL_T3vsT1", 
+                                   "HH_T2vsT1", "HH_T3vsT1"))) %>%
   ggplot(aes(x = group, y = valName, fill = t)) + 
   geom_tile() +
   scale_fill_gradientn(limits = c(-8, 8), colors = c("blue", "white", "red"),  na.value = "grey") +
+  geom_text(aes(label = ifelse(is.na(sigPvalue), NA, "*"))) +
   theme_bw() + 
   theme(axis.text.x = element_text(angle = 30, hjust = 1))
