@@ -22,7 +22,7 @@ for (strain in strains) {
 ## load data --------------------------------------
 gwas_all <- gwas %>% 
   lapply(function(x) x %>% 
-          # mutate(Padj = p.adjust(P, method = "fdr")) %>% # no sig. in Padj
+           # mutate(Padj = p.adjust(P, method = "fdr")) %>% # no sig. in Padj
            separate(FULL_NAME, c("group", "FULL_NAME"), ":")) %>% 
   bind_rows(.id = "strain") 
 
