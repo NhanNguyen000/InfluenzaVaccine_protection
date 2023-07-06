@@ -19,7 +19,7 @@ rawDat_ZirFlu_meboAnnot <- read.xlsx(xlsxFile = '/vol/projects/CIIM/Influenza/Zi
 
 # Annotation: filter HMDB endogenous metabolites =========================================================================
 # HMDB endogenous metabolites 
-hmdb_endogenous <- read_csv("/vol/projects/CIIM/Influenza/ZirrFlu/ZirFlu_NhanNguyen/reference/20221011_HMDB_endogenousMetabolites")
+hmdb_endogenous <- read_csv("data/20221011_HMDB_endogenousMetabolites")
 
 # iMED
 iMED_meboAnnot_temp <- rawDat_iMED_meboAnnot %>% 
