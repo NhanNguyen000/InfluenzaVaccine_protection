@@ -89,7 +89,8 @@ pred_logInfo <- pred_logTab[19:20, ] %>% # extract the variants (SNP) used infor
 
 ## model prediction information  --------------------------------------------------------
 models_pred_Tab <- models_Tab_v2 %>% 
-  select(OMICSPRED.ID, X.SNP, model, type, Gene, name, Name, subClass, class,
+  select(OMICSPRED.ID, X.SNP, model, type, Gene, Ensembl.ID,
+         CHEMICAL_FORMULA, name, Name, subClass, class, 
          matches("R2|Rho|MissingRate")) %>%
   full_join(pred_logInfo) %>% relocate(c(warning, matches("SNPs")), .after = "X.SNP")
 

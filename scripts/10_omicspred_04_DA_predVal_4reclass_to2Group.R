@@ -4,6 +4,7 @@ library(tidyverse)
 library(limma)
 library(gplots)
 library(venn)
+library(org.Hs.eg.db)
 
 convert_protectees <- function(input) {
   # Aim: convert the vecotr of 4 groups reclassification (LL, LH, HL, HH) into 2 groups: LL and protectee (LH, HL HH)
@@ -43,7 +44,7 @@ get.limmaRes_perStrain <- function(metadat, inputDat, strain_groups) {
   resList <- list()
   for (strain_group in strain_groups) {
     metadat_temp <- metadat %>% rename("reclassify" := strain_group) %>%
-      select(probandID, sex, age, reclassify) %>% drop_na()
+      dplyr::select(probandID, sex, age, reclassify) %>% drop_na()
     
     resList[[strain_group]] <- get.limmaRes(metadat_temp, inputDat)
   }
@@ -55,7 +56,7 @@ get.DAs <- function(resLimma) {
   # following the get.limmaRes result
   
   res_DA <- resLimma$p.value %>% as.data.frame %>% 
-    select(matches("reclassify")) %>% filter(. <0.05)
+    dplyr::select(matches("reclassify")) %>% filter(. <0.05)
   
   return(res_DA)
 }
@@ -65,7 +66,7 @@ get.tstat <- function(resLimma) {
   # following the get.limmaRes result
   
   res_tstat <- resLimma$t %>% as.data.frame %>% 
-    select(matches("reclassify"))
+    dplyr::select(matches("reclassify"))
   
   return(res_tstat)
 }
@@ -77,7 +78,7 @@ get.plotDat_clusterRow <- function(plotDat, colName, valColumn) {
   
   # outcome: plotDat_order - plot data long format with order in valName, so it will show clustering with ggplot heatmap
   
-  plotDat_wide <- plotDat %>% select(c("valName", colName, valColumn)) %>% 
+  plotDat_wide <- plotDat %>% dplyr::select(c("valName", colName, valColumn)) %>% 
     pivot_wider(names_from = colName, values_from = valColumn) %>% 
     column_to_rownames("valName")
   
@@ -96,7 +97,7 @@ load("omicsPred_predTab.RData")
 
 ## metadata for corresponding subjects (who have genetic data) -------------------------
 metadat <- cohorts$HAI_all %>% filter(probandID %in% rownames(pred_Tab)) %>%
-  left_join(cohorts$donorInfo_all %>% select(probandID, season, cohort, sex, age)) %>% 
+  left_join(cohorts$donorInfo_all %>% dplyr::select(probandID, season, cohort, sex, age)) %>% 
   mutate_at(vars(contains("reclassify")), ~convert_protectees(.x)) %>%
   mutate_at(vars(contains("reclassify")), ~factor(.x, levels = c("LL", "protectee")))
 
@@ -142,10 +143,33 @@ tstat_longDat <- tstat_all %>% full_join(DAs_all)
 
 # selected DAs for the heat map
 selected_DAs <- unique(as.vector(unlist(res.venn)[which(duplicated(unlist(res.venn)))])) # DAs in at least twice across strains
-selected_DAs_info <- selected_models %>% filter(OMICSPRED.ID %in% selected_DAs)
-selected_DAs_info %>% count(type, model)
+
+selected_DAs_info <- selected_models %>% 
+  filter(OMICSPRED.ID %in% selected_DAs) %>% # Note: some row have Ensemble ID but no gene name
+  full_join(mapIds(org.Hs.eg.db, keys = selected_DAs_info$Ensembl.ID, # add missing gene name using org.Hs.eg.db with Ensemble ID
+                   column = "SYMBOL", keytype =  "ENSEMBL") %>% 
+              unlist() %>% as.data.frame() %>% 
+              rename("." = "Gene2") %>% rownames_to_column("Ensembl.ID")) %>%
+  mutate(Gene = ifelse(is.na(Gene), Gene2, Gene)) %>% dplyr::select(-Gene2) %>%
+  mutate(Gene = ifelse(type != "RNAseq", Gene,
+                       ifelse(Ensembl.ID == "ENSG00000237039", "RPS28P4", # manual add missing gene name via internet search
+                              ifelse(Ensembl.ID == "ENSG00000227097", "RPS28P7",
+                                     ifelse(Ensembl.ID == "ENSG00000226210", "WASH8P",
+                                            ifelse(Ensembl.ID == "ENSG00000228409", "CCT6AP1", 
+                                                   ifelse(Ensembl.ID == "ENSG00000152117", "SMPD4BP", Gene))))))) %>%
+  mutate(Name_all = ifelse(is.na(Name), Gene, # make a column with name of all metabolite, protein, gene
+                          ifelse(is.na(CHEMICAL_FORMULA), Name, 
+                                 paste0(Name, "(", CHEMICAL_FORMULA, ")"))))
+
+
+selected_DAs_info %>% count(type, model)  # have checked, no gene/ proteins overlap with DAPs
 ## plot heatmap --------------------------------
-plotDat <- tstat_longDat %>% filter(valName %in% selected_DAs)
+plotDat <- tstat_longDat %>% filter(valName %in% selected_DAs) %>%
+  full_join(selected_DAs_info %>% dplyr::select(OMICSPRED.ID, Name_all, model),
+            by = c("valName" = "OMICSPRED.ID")) %>%
+  mutate(Name_all = ifelse(Name_all != "ICAM5", Name_all, # The ICAM5 proteins in Somalogic has 2 prediction models
+                           paste(Name_all, "_", valName))) %>% 
+  dplyr::select(-valName) %>% rename("Name_all" = "valName") %>% as.data.frame()
 
 plotDat_order <- get.plotDat_clusterRow(plotDat, 
                                         colName = "strain", 
@@ -157,4 +181,5 @@ plotDat_order %>%
   geom_text(aes(label = ifelse(is.na(p.value), NA, "*"))) +
   scale_fill_gradient2(low = "blue", mid = "white", high = "red") + 
   theme_bw() + 
-  theme(axis.text.x = element_text(angle = 30, hjust = 1))
+  theme( #axis.text.x = element_text(angle = 30, hjust = 1),
+        axis.text=element_text(size=8))
