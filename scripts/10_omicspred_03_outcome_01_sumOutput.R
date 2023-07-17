@@ -121,3 +121,12 @@ pred_Tab <- predOut$score %>%
   purrr::reduce(cbind) %>% select(selected_models$OMICSPRED.ID)
 
 #save(pred_Tab, selected_models, file = "omicsPred_predTab.RData")
+
+# OmicPred models overview - barplot ======================================================
+selected_models <- models_pred_Tab %>% filter(num_SNPs_use >= 5) # the R2 can be good?
+models_Tab %>% count(type)
+models_Tab_v2 <- models_Tab %>% full_join(models_pred_Tab) %>%
+  mutate(status = ifelse(num_SNPs_use >=5, "used", "non_used")) %>%
+  select(model, status) %>% summarise()
+
+models_Tab_v2 %>% ggplot(aes(x = model, y = ))

@@ -33,7 +33,7 @@ plotDat <- mebo_taxo_fomula2 %>% select(metabolite_class) %>%
 plotDat %>% 
   ggplot(aes(x = "", y = n, fill = metabolite_class)) +
   geom_bar(stat = "identity", width = 1, color = "black") +
-  geom_text(aes(label = prop), position = position_stack(vjust = 0.6),
+  geom_text(aes(x = 1.3, label = prop), position = position_stack(vjust = 0.5),
             color = "black", size = 3) +
   coord_polar("y") + theme_void()
 

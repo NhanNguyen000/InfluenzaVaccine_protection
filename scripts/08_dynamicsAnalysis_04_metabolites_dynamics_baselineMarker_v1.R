@@ -214,3 +214,45 @@ plotDat_temp %>%
           right_annotation = row_ha_temp,
           column_names_rot = 30,
           row_names_gp = gpar(fontsize = 8), column_names_gp = gpar(fontsize = 8))
+## heatmap:relative value (T3, T4) vs. baseline (T1) per protein ------------------------------
+library(ComplexHeatmap)
+
+plotDat_H1N1_wide <- plotDat %>% 
+  select(season, time, H1N1_reclassify, mebos) %>% filter(season == "2015") %>%
+  mutate(group = paste0(H1N1_reclassify, "_", time)) %>%
+  group_by(group) %>% 
+  summarise(across(mebos, function(x) mean(x, na.rm = TRUE))) %>%
+  column_to_rownames("group") %>% t()
+
+plotDat_H1N1_relative <- (plotDat_H1N1_wide - plotDat_H1N1_wide[, "LL_T1"]) %>%
+  as.data.frame() %>%
+  select(c( "LL_T1", "LL_T3", "LL_T4",
+            "LH_T1", "LH_T3", "LH_T4",
+            "HL_T1", "HL_T3", "HL_T4",
+            "HH_T1", "HH_T3", "HH_T4"))
+
+group_annot <- interested_mebo %>% 
+  lapply(function(x) x %>% as.data.frame %>% rename("valName" = ".")) %>%
+  bind_rows(.id = "group") %>% 
+  mutate(value = TRUE) %>% pivot_wider(names_from = "group", values_from = "value") %>%
+  mutate(group = ifelse(baseline_sigMebo == TRUE & dynamic_sigMebo == TRUE, "sigBase_sigDynamic", NA)) %>%
+  mutate(group = ifelse(is.na(group), 
+                        ifelse(is.na(baseline_sigMebo), "sigDynamic", "sigBase"), group)) %>%
+  arrange(group)
+
+
+plotDat_H1N1_relative_v2 <- plotDat_H1N1_relative[group_annot$valName, ]
+identical(group_annot$valName, rownames(plotDat_H1N1_relative_v2)) # TRUE = the same order
+
+row_ha = rowAnnotation(
+  markers = group_annot$group, 
+  col = list(markers = c("sigBase_sigDynamic" = "red", "sigBase" = "green", "sigDynamic" = "blue")))
+
+library(circlize)
+
+plotDat_H1N1_relative_v2 %>% 
+  Heatmap(cluster_columns = FALSE, cluster_rows = FALSE,
+          column_split = substring(colnames(plotDat_H1N1_relative), 1, 2),
+          col = colorRamp2(c(-2, 0, 2), c("blue", "ghostwhite", "red"),space = "sRGB"),
+          right_annotation = row_ha,
+          column_names_rot = 90)
