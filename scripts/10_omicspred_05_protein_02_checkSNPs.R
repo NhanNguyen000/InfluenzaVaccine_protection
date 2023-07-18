@@ -1,4 +1,4 @@
-# run thi code in the terminal ---------------------------
+# run the code in the terminal ---------------------------
 # because the vcf file have some prefix in the SNPs, so could not use the bcftools, we use the defaut linux command
 cd /vol/projects/CIIM/Influenza/ZirrFlu/InfluenzaCohorts_NhanNguyen/processedDat/omicsPred/
 grep -w -e CHROM -f CXCL1_rsid.txt input/iMED_vcf.vcf >| CXCL1_genotype.txt 

@@ -43,7 +43,7 @@ get.limmaRes_perStrain <- function(metadat, inputDat, strain_groups) {
   
   resList <- list()
   for (strain_group in strain_groups) {
-    metadat_temp <- metadat %>% rename("reclassify" := strain_group) %>%
+    metadat_temp <- metadat %>% dplyr::rename("reclassify" := strain_group) %>%
       dplyr::select(probandID, sex, age, reclassify) %>% drop_na()
     
     resList[[strain_group]] <- get.limmaRes(metadat_temp, inputDat)
@@ -131,13 +131,13 @@ DAs_all <- DAs %>%
   lapply(function(x) x %>% rownames_to_column("valName")) %>%
   bind_rows(.id = "strain") %>% 
   mutate(strain = gsub("_reclassify", "", strain)) %>%
-  rename("p.value" = "reclassifyprotectee")
+  dplyr::rename("p.value" = "reclassifyprotectee")
 
 tstat_all <- tstat_dat %>% 
   lapply(function(x) x %>% rownames_to_column("valName")) %>%
   bind_rows(.id = "strain") %>%
   mutate(strain = gsub("_reclassify", "", strain))  %>%
-  rename("tstat" = "reclassifyprotectee")
+  dplyr::rename("tstat" = "reclassifyprotectee")
 
 tstat_longDat <- tstat_all %>% full_join(DAs_all)
 
@@ -146,10 +146,10 @@ selected_DAs <- unique(as.vector(unlist(res.venn)[which(duplicated(unlist(res.ve
 
 selected_DAs_info <- selected_models %>% 
   filter(OMICSPRED.ID %in% selected_DAs) %>% # Note: some row have Ensemble ID but no gene name
-  full_join(mapIds(org.Hs.eg.db, keys = selected_DAs_info$Ensembl.ID, # add missing gene name using org.Hs.eg.db with Ensemble ID
+  left_join(mapIds(org.Hs.eg.db, keys = selected_models$Ensembl.ID, # add missing gene name using org.Hs.eg.db with Ensemble ID
                    column = "SYMBOL", keytype =  "ENSEMBL") %>% 
               unlist() %>% as.data.frame() %>% 
-              rename("." = "Gene2") %>% rownames_to_column("Ensembl.ID")) %>%
+              dplyr::rename("Gene2" = ".") %>% rownames_to_column("Ensembl.ID")) %>%
   mutate(Gene = ifelse(is.na(Gene), Gene2, Gene)) %>% dplyr::select(-Gene2) %>%
   mutate(Gene = ifelse(type != "RNAseq", Gene,
                        ifelse(Ensembl.ID == "ENSG00000237039", "RPS28P4", # manual add missing gene name via internet search
@@ -163,9 +163,31 @@ selected_DAs_info <- selected_models %>%
 
 
 selected_DAs_info %>% count(type, model)  # have checked, no gene/ proteins overlap with DAPs
+
+## selectDA elements with consistent trend across 3 strain --------------------
+selected_DAs_v2 <- tstat_longDat %>% filter(valName %in% selected_DAs) %>%
+  mutate(direction = ifelse(tstat >0, 1, -1)) %>%
+  group_by(valName) %>% summarise(regula_trend = sum(direction)) %>% # the regulation direction across 3 strains
+  filter(abs(regula_trend) == 3) %>% # select the consistent regulation direction across 3 strains (= +/-3)
+  dplyr::select(valName) %>% unlist()
+
+selected_DAs_info %>% filter(OMICSPRED.ID %in% selected_DAs_v2) %>% count(type, model)
+selected_DAs_info_v2 <- selected_DAs_info %>% filter(OMICSPRED.ID %in% selected_DAs_v2)
+
+## selectDA elements (protein, RNAseq) show positive correlation with measured values --------------------
+load("pred_with_proRna_measures.RData")
+predMeasure_positivCor <- pred_inf %>% filter(cor > 0)
+
+selected_DAs_info_v2.1 <- selected_DAs_info_v2 %>% #as.data.frame() %>% 
+  filter(Gene %in% predMeasure_positivCor$Gene) %>% filter(model %in% c("RNAseq", "Olink"))
+
+selected_DAs_info_v2.1 %>% count(type, model)
+
 ## plot heatmap --------------------------------
-plotDat <- tstat_longDat %>% filter(valName %in% selected_DAs) %>%
-  full_join(selected_DAs_info %>% dplyr::select(OMICSPRED.ID, Name_all, model),
+plotDat <- tstat_longDat %>% 
+ # filter(valName %in% selected_DAs_v2) %>%
+  filter(valName %in% selected_DAs_info_v2.1$OMICSPRED.ID) %>%
+  left_join(selected_DAs_info %>% dplyr::select(OMICSPRED.ID, Name_all, model),
             by = c("valName" = "OMICSPRED.ID")) %>%
   mutate(Name_all = ifelse(Name_all != "ICAM5", Name_all, # The ICAM5 proteins in Somalogic has 2 prediction models
                            paste(Name_all, "_", valName))) %>% 
@@ -183,3 +205,16 @@ plotDat_order %>%
   theme_bw() + 
   theme( #axis.text.x = element_text(angle = 30, hjust = 1),
         axis.text=element_text(size=8))
+
+# check pathway ---------------------
+test <- tstat_longDat %>% filter(valName %in% unique(unlist(res.venn))) %>%
+  left_join(selected_models, by = c("valName" = "OMICSPRED.ID")) %>% 
+  filter(type %in% c("RNAseq", "protein")) %>%
+ # dplyr::select(Gene, type, p.value, strain) %>% drop_na() %>%
+  dplyr::select(Gene) %>% drop_na() %>%
+  filter(Gene != "") %>% distinct()
+
+write.table(test$Gene, 
+            file = "omicsPred_sigGenes.txt",
+            col.names = FALSE, row.names = FALSE, quote = FALSE)
+

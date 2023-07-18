@@ -22,7 +22,7 @@ models_Tab_v2 <- models_Tab %>%
          subClass = ifelse(is.na(Sub.Pathway), Subgroup, Sub.Pathway),
          class = ifelse(is.na(Super.Pathway), Group, Super.Pathway),
          name = tolower(Name)) %>% 
-  select(-c("Biomarker.Name", "Biochemical.Name", 
+  dplyr::select(-c("Biomarker.Name", "Biochemical.Name", 
             "Subgroup", "Sub.Pathway", "Group", "Super.Pathway")) %>%
   relocate(c(Metabolon.ID, Trait.ID), .after = name) %>%
   left_join(hmdb_endogenous %>% mutate(name = tolower(NAME))) # annotate to the hmdb database using matched names
@@ -80,7 +80,7 @@ pred_logTab <- predOut$log %>%
 
 pred_logInfo <- pred_logTab[19:20, ] %>% # extract the variants (SNP) used information from models'log file
   t() %>% as.data.frame() %>% 
-  rename("warning" = "19", "SNPs_use_info" = "20") %>%
+  dplyr::rename("warning" = "19", "SNPs_use_info" = "20") %>%
   mutate(num_SNPs_use = ifelse(SNPs_use_info == "Error: No valid variants in --score file.", 0, 
                                str_extract(SNPs_use_info, "[[:digit:]]+")) %>% as.numeric) %>%
   mutate(numSNPs_skip = ifelse(is.na(warning), 0, # NA = skip SNPs is not applicable
@@ -89,7 +89,7 @@ pred_logInfo <- pred_logTab[19:20, ] %>% # extract the variants (SNP) used infor
 
 ## model prediction information  --------------------------------------------------------
 models_pred_Tab <- models_Tab_v2 %>% 
-  select(OMICSPRED.ID, X.SNP, model, type, Gene, Ensembl.ID,
+  dplyr::select(OMICSPRED.ID, X.SNP, model, type, Gene, Ensembl.ID,
          CHEMICAL_FORMULA, name, Name, subClass, class, 
          matches("R2|Rho|MissingRate")) %>%
   full_join(pred_logInfo) %>% relocate(c(warning, matches("SNPs")), .after = "X.SNP")
@@ -101,9 +101,9 @@ models_pred_Tab %>% count(type, model)
 selected_models %>% count(type, model)
 
 models_pred_Tab %>% 
-  filter(type == "RNAseq") %>% 
+ # filter(type == "RNAseq") %>% 
 #  filter(type != "RNAseq") %>% 
-  filter(X.SNP < 10) %>%
+ # filter(X.SNP < 10) %>%
   ggplot(aes(x = X.SNP, y = as.numeric(Internal_R2))) + 
   geom_point() + theme_classic()
 
@@ -114,19 +114,36 @@ models_pred_Tab %>%
   ggplot(aes(x = num_SNPs_use, y = as.numeric(Internal_R2))) + 
   geom_point() + theme_classic()
 
+models_pred_Tab %>% 
+  ggplot(aes(x = log10(X.SNP), y = as.numeric(Internal_R2), col = model)) + 
+  geom_jitter(width = 0.2, size = 0.5) + 
+  geom_vline(xintercept = log10(5), col = "red") +
+  theme_classic()
+
 ## load predicted value ---------------------------------
 pred_Tab <- predOut$score %>%
   lapply(function(x) x %>% column_to_rownames("X.IID")) %>% 
   imap(~.x %>% rename_with(function(x) .y)) %>% 
-  purrr::reduce(cbind) %>% select(selected_models$OMICSPRED.ID)
+  purrr::reduce(cbind) %>% dplyr::select(selected_models$OMICSPRED.ID)
 
 #save(pred_Tab, selected_models, file = "omicsPred_predTab.RData")
 
 # OmicPred models overview - barplot ======================================================
 selected_models <- models_pred_Tab %>% filter(num_SNPs_use >= 5) # the R2 can be good?
 models_Tab %>% count(type)
-models_Tab_v2 <- models_Tab %>% full_join(models_pred_Tab) %>%
-  mutate(status = ifelse(num_SNPs_use >=5, "used", "non_used")) %>%
-  select(model, status) %>% summarise()
 
-models_Tab_v2 %>% ggplot(aes(x = model, y = ))
+models_Tab_v3 <- models_Tab %>% full_join(models_pred_Tab) %>%
+  mutate(status = ifelse(num_SNPs_use >=5, "used", "non_used")) %>%
+  mutate(status = ifelse(is.na(status), "used", status)) %>%
+  group_by(model, status) %>% summarise(num_models = n())
+
+models_Tab_v3 %>% 
+  ggplot(aes(x = model, y = num_models, fill = status)) + 
+  geom_bar(stat = "identity") +
+  theme_classic()
+
+# OmicPred select models overview - barplot ======================================================
+
+models_pred_Tab %>% 
+  ggplot(aes(x = log10(X.SNP), y = as.numeric(Internal_R2))) + 
+  geom_point() + theme_classic()
