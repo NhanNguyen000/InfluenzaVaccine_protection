@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH --job-name=elasticNet_impVar       # Name of job
-#SBATCH --output=scripts/elasticNet_optimal.out        # stdout
-#SBATCH --error=scripts/elasticNet_optimal.err         # stderr
+#SBATCH --output=scripts/elasticNet_optimal_v5.out        # stdout
+#SBATCH --error=scripts/elasticNet_optimal_v5.err         # stderr
 #SBATCH --partition=cpu           # partition to use (check with sinfo)
 #SBATCH --nodes=1                 # Number of nodes
 #SBATCH --ntasks=1                # Number of tasks | Alternative: --ntasks-per-node
@@ -14,7 +14,7 @@
 #SBATCH --clusters=bioinf
 
 cd /vol/projects/BIIM/Influenza/ZirrFlu/InfluenzaCohorts_NhanNguyen/
-Rscript scripts/15_elasticModel_03_paraRange_04_alpha.R
+Rscript scripts/15_elasticModel_04_optimalModel_01_training.R
 
 /usr/bin/hostname
 

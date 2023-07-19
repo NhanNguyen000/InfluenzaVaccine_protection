@@ -37,8 +37,8 @@ set.seed(123) #set the seed to make your partition reproducible
 selected_metric =  "Kappa" # similar to classification accuracy but it is useful to normalize the imbalance in classes
 
 ## run models to identify the important input variables ---------------------------------
-selected_lamda_range <- seq(0, 0.5, by = 0.001)
-selected_alpha_range <- seq(0, 1, by = 0.001)
+selected_lamda_range <- seq(0, 0.1, by = 0.001)
+selected_alpha_range <- seq(0, 0.1, by = 0.001)
 selected_crossVal <- trainControl(method="repeatedcv", number = 5, 
                                   repeats = 30)
 #                                  repeats = 100)
@@ -63,4 +63,4 @@ for (i in 1:nreps) {
 
 # save the result -----------------------
 #save(netFits, netFit_pred, file = "res.elasticModel_optimal.RData")
-save(netFits, netFit_pred, file = "res.elasticModel_optimal_rep30_10.RData")
+save(netFits, netFit_pred, file = "res.elasticModel_optimal_rep30_9.RData")

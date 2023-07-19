@@ -147,3 +147,4 @@ models_Tab_v3 %>%
 models_pred_Tab %>% 
   ggplot(aes(x = log10(X.SNP), y = as.numeric(Internal_R2))) + 
   geom_point() + theme_classic()
+

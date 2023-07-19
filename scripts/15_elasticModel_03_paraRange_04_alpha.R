@@ -4,6 +4,8 @@ library(tidyverse)
 library(magrittr)
 library(caret)
 library(glmnet)
+library(latticeExtra) 
+library(RColorBrewer)
 
 # load data =======================================================================
 load("input.elasticModel.RData")
@@ -55,3 +57,51 @@ for (i in 1:nreps) {
 
 # save the result -----------------------
 save(netFits, file = "netFits_temp_alpha.RData")
+
+# optimal alpha range ==========================================
+#load data
+load("netFits_temp_alpha.RData")
+netFits_1 <- netFits
+
+load("netFits_temp_alpha_5.RData")
+netFits_5 <- netFits
+
+load("netFits_temp_alpha_10.RData")
+netFits_10 <- netFits
+
+netFits <- list()
+netFits$run_1 <- netFits_1
+netFits$run_5 <- netFits_5
+netFits$run_10 <- netFits_10
+
+netFits_temp <- netFits %>% purrr::flatten()
+
+# check the Kappa value within lambda and alpha ranges
+alpha_range <- netFits_temp %>% 
+  lapply(function(x) x$results) %>%
+  bind_rows(.id = "run")
+
+levelplot(Kappa ~ alpha * lambda, alpha_range, 
+          col.regions = colorRampPalette(brewer.pal(8, "Purples"))(100),
+          main = list("Kappa value", side = 1, line = 0.5)) 
+
+alpha_range %>% 
+  ggplot(aes(x = alpha, y = Kappa, group = alpha)) + 
+  geom_boxplot() + 
+  theme_classic()
+
+alpha_range %>% filter(alpha < 0.3) %>% 
+  ggplot(aes(x = alpha, y = Kappa, group = alpha)) + 
+  geom_boxplot() + 
+  theme_classic()
+
+# check the best tune (optimal lambda and alpha value) in 30 repeated models
+bestTune_range <- netFits_temp %>% 
+  lapply(function(x) x$bestTune) %>%
+  bind_rows(.id = "run")
+
+bestTune_range  %>% 
+  ggplot(aes(x = alpha, y = lambda, group = alpha)) + 
+  geom_boxplot() + geom_jitter(width = 0.001) +
+  ggtitle("Best turn parameters") +
+  theme_classic()
