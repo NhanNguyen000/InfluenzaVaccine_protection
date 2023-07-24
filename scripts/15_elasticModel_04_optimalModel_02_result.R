@@ -5,8 +5,9 @@ library(magrittr)
 library(caret)
 library(glmnet)
 
-# load data =======================================================================
+# Prediction outcome - repeat 1 time, data - metric ====================================
 load("res.elasticModel_optimal_rep30_0.RData")
+load("res.elasticModel_optimal_rep30_zscore_0.RData")
 
 netFit_parameters <- netFit_pred %>%
   lapply(function(x) x[[1]]$byClass %>% 
@@ -24,4 +25,55 @@ para_plotDat %>%
   geom_abline(slope = 1, linetype = "dashed")+
   xlim(0, 1) + ylim(0, 1) + 
   ggtitle("Prediction accuracy in validation cohorts") +
+  #ggtitle("Prediction in validation cohorts, normal metabolite data") +
+  #ggtitle("Prediction in validation cohorts, zscore metabolite data") +
   theme_classic()
+
+#  Prediction outcome - repeat multiple times ======================================
+netFits_total <- list()
+netFit_pred_total <- list()
+
+## load data ---------------------------------------------------------------
+# load data - metric: Kappa, 19 times 
+for (i in c(seq(0, 9), seq(11, 19))) {
+  load(paste0("res.elasticModel_optimal_rep30_", i, ".RData"))
+  netFits_total[[as.character(i)]] <- netFits
+  netFit_pred_total[[as.character(i)]] <- netFit_pred
+}
+
+# load data - metric: Accuracy, 10 times
+for (i in seq(0, 9)) {
+  load(paste0("res.elasticModel_optimal_rep30_", i, "_accuracy.RData"))
+  netFits_total[[as.character(i)]] <- netFits
+  netFit_pred_total[[as.character(i)]] <- netFit_pred
+}
+
+# load data - metric: Kappa, 10 times with metabolite z-score input 
+for (i in seq(0, 9)) {
+  load(paste0("res.elasticModel_optimal_rep30_zscore_", i, ".RData"))
+  netFits_total[[as.character(i)]] <- netFits
+  netFit_pred_total[[as.character(i)]] <- netFit_pred
+}
+
+## plot data ---------------------------------------------------------------
+netFit_parameters_total <- netFit_pred_total %>%
+  lapply(function(x) x %>% 
+           lapply(function(y) y[[1]]$byClass %>% 
+                    as.data.frame %>% rownames_to_column("parameter")) %>% 
+           bind_rows(.id = "vali_set") %>% rename("value" = ".")) %>%
+  bind_rows(.id = "repeated_run")
+
+para_plotDat_total <- netFit_parameters_total %>% 
+  filter(parameter %in% c("Sensitivity", "Specificity")) %>%
+  pivot_wider(names_from = parameter, values_from = value) %>%
+  mutate(repeated_run = paste0(repeated_run, "_", vali_set))
+
+para_plotDat_total %>%
+  ggplot(aes(x = 1-Specificity, y = Sensitivity, )) + 
+  #geom_point(color = "black", size = 6, alpha = 0.9) + 
+  geom_jitter(aes(col = vali_set), size = 2, alpha = 0.9) + 
+  geom_abline(slope = 1, linetype = "dashed")+v
+  xlim(0, 1) + ylim(0, 1) + 
+  ggtitle("Prediction accuracy in validation cohorts") +
+  theme_classic()
+

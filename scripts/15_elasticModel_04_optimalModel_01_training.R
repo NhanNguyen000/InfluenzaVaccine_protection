@@ -63,4 +63,5 @@ for (i in 1:nreps) {
 
 # save the result -----------------------
 #save(netFits, netFit_pred, file = "res.elasticModel_optimal.RData")
-save(netFits, netFit_pred, file = "res.elasticModel_optimal_rep30_9.RData")
+save(netFits, netFit_pred, file = "res.elasticModel_optimal_rep30_19.RData")
+#save(netFits, netFit_pred, file = "res.elasticModel_optimal_rep30_9_accuracy.RData")
