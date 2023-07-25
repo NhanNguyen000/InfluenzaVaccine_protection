@@ -27,6 +27,16 @@ mebo <- "C18H32O2"
 mebo <- "C4H8O3"
 mebo <- "C11H12N2O2"
 mebo <- "C3H7NO2S"
+mebo <- "C7H12N2O3"
+mebo <- "C5H12N2O2"
+mebo <- "C9H18O"
+mebo <- "C11H12N2O2"
+mebo <- "C3H6O4"
+mebo <- "C7H10O6"
+mebo <- "C9H20NO2"
+mebo <- "C3H7O6P"
+mebo <- "C3H7NO2S"
+
 metadat_boxplot <- inputDat %>% 
   select(season, responder, c(mebo), matches("_abFC|_T1|_T4|_reclassify")) %>%
   mutate(H1N1_abFC = ifelse(H1N1_reclassify == "LH" |H1N1_reclassify == "HH", "R", "NR")) %>%

@@ -7,8 +7,9 @@ library(glmnet)
 
 # Prediction outcome - repeat 1 time, data - metric ====================================
 load("res.elasticModel_optimal_rep30_0.RData")
-load("res.elasticModel_optimal_rep30_zscore_0.RData")
+#load("res.elasticModel_optimal_rep30_zscore_0.RData")
 
+## model performance  -------------------------------------------------
 netFit_parameters <- netFit_pred %>%
   lapply(function(x) x[[1]]$byClass %>% 
            as.data.frame %>% rownames_to_column("parameter")) %>% 
@@ -28,6 +29,24 @@ para_plotDat %>%
   #ggtitle("Prediction in validation cohorts, normal metabolite data") +
   #ggtitle("Prediction in validation cohorts, zscore metabolite data") +
   theme_classic()
+
+## prediction ------------------------------------------------------------------
+pred_table <- netFit_pred %>%
+  lapply(function(x) x[[1]]$table %>% as_tibble) %>% 
+  bind_rows(.id = "vali_set") %>%
+  mutate(pred_perform = ifelse(Prediction == Reference, TRUE, FALSE))
+
+pred_table %>% 
+  ggplot(aes(x = vali_set, y = n, fill = pred_perform)) + 
+  geom_bar(stat = "identity", position = position_dodge()) + 
+  theme_classic()
+
+pred_table %>% 
+  ggplot(aes(x = Reference, y = n, fill = pred_perform)) + 
+  geom_bar(stat = "identity", position = "stack") + 
+  facet_grid(~vali_set) +
+  theme_bw() + theme(legend.position = "top")
+
 
 #  Prediction outcome - repeat multiple times ======================================
 netFits_total <- list()
