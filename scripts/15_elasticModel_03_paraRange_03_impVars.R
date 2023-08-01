@@ -6,6 +6,7 @@ library(caret)
 library(glmnet)
 
 # load data =======================================================================
+# models use normal metabolite data
 load("input.elasticModel.RData")
 
 ## input variable ----------------------------------------------------------------
@@ -46,8 +47,21 @@ for (i in 1:nreps) {
 save(netFits_temp, file = "netFits_temp_varImp.RData")
 
 # Importance variables ==========================================
+# models use normal metabolite data
 load("netFits_temp_varImp.RData")
 
+# models use z-score metabolite data
+netFits_total <- list()
+netFit_pred_total <- list()
+for (i in seq(0, 9)) {
+  load(paste0("res.elasticModel_allinputs_Zscore_rep10_", i, ".RData")) # 10 time * rep10 = 100 times
+  netFits_total[[as.character(i)]] <- netFits
+  netFit_pred_total[[as.character(i)]] <- netFit_pred
+}
+
+netFits_temp <- netFits_total %>% flatten()
+
+## calculate importance variables ---------------
 impVars <- netFits_temp %>% 
   lapply(function(x) varImp(x)) %>%
   lapply(function(x) x$importance) %>%
@@ -62,6 +76,7 @@ impVars_avg <- impVars %>%
 impVars_names <- impVars_avg %>% filter(. > 0) %>% arrange(desc(.)) %>% rownames() # get the important variable
 impVars_top <- impVars_avg %>% arrange(desc(.)) %>% top_n(., n = 50) %>% rownames()
 #save(impVars_top, file = "impVars_top.RData")
+#save(impVars_top, file = "impVars_top_zscoreMebo.RData")
 
 impVars_longDat <- impVars %>% 
   pivot_longer(!valName, names_to = "model", values_to = "weight")
