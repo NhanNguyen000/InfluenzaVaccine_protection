@@ -69,6 +69,17 @@ v.table <- venn(res.venn$iMED_2015$H3N2_reclassify)
 v.table <- venn(res.venn$ZirFlu_2019$Bvictoria_reclassify)
 v.table <- venn(res.venn$ZirFlu_2020$Byamagata_reclassify)
 
+# check Padj significant ----------------------------------------
+padj_2015 <- resPro_4reclass$iMED_2015 %>% 
+  lapply(function(x) x %>% 
+           eBayes %>% topTable(n = Inf, sort.by = "n") %>% 
+           filter(adj.P.Val < 0.05)) # no p-adj significant (<0.05) in other seasons
+
+res.venn_padj <- padj_2015 %>% 
+  lapply(function(x) x %>% rownames(x))
+
+v.table <- venn(res.venn_padj)
+
 # heatmap  ----------------------------------------------------
 DAs_all <- DAs %>% 
   lapply(function(x) 
@@ -101,6 +112,7 @@ selected_DAs <- unique(c(intersect(res.venn$iMED_2015$H1N1_reclassify, res.venn$
                          intersect(res.venn$iMED_2015$H1N1_reclassify, res.venn$iMED_2015$B_reclassify))) # DAs in at least 2 strains
 
 selected_DAs <- unique(unlist(res.venn$iMED_2015))
+selected_DAs <- unique(unlist(res.venn_padj))
 # heatmap
 plotDat <- tstat_longDat %>% 
   filter(valName %in% selected_DAs) %>%
@@ -113,8 +125,36 @@ plotDat_order <- get.plotDat_clusterRow(plotDat,
 plotDat_order %>%
   ggplot(aes(x = group, y = valName, fill = tstat)) + 
   geom_tile() +
-  geom_text(aes(label = ifelse(is.na(p.value), NA, "*"))) +
+ # geom_text(aes(label = ifelse(is.na(p.value), NA, "*"))) +
   scale_fill_gradient2(low = "blue", mid = "white", high = "red") + 
   theme_bw() + 
   theme(axis.text.x = element_text(angle = 30, hjust = 1))
 
+# heatmap - only season iMED 2015
+plotDat <- tstat_longDat %>% 
+  filter(valName %in% selected_DAs) %>%
+  filter(cohort == "iMED", season == "2015") %>%
+  mutate(group = gsub("iMED_2015_", "", group), comparison = gsub("_", "", comparison)) %>%
+  mutate(group = factor(group, levels = c("H1N1_LLvsLH", "H1N1_LLvsHL", "H1N1_LLvsHH",
+                                          "H3N2_LLvsLH", "H3N2_LLvsHL", "H3N2_LLvsHH",
+                                          "B_LLvsLH", "B_LLvsHL", "B_LLvsHH"))) %>%
+  rename("relative_diff" = "tstat")
+
+plotDat_order <- get.plotDat_clusterRow(plotDat, 
+                                        colName = "group", 
+                                        valColumn = "relative_diff")
+
+plotDat_order %>%
+  ggplot(aes(x = group, y = valName, fill = relative_diff)) + 
+  geom_tile() +
+  # geom_text(aes(label = ifelse(is.na(p.value), NA, "*"))) +
+  scale_fill_gradient2(low = "blue", mid = "white", high = "red") + 
+  theme_bw() + 
+  theme(axis.text.x = element_text(angle = 30, hjust = 1))
+
+plotDat_order %>% 
+  ggplot(aes(x = group, y = valName, fill = relative_diff)) + 
+  geom_tile() +
+  # geom_text(aes(label = ifelse(is.na(p.value), NA, "*"))) +
+  scale_fill_gradient2(low = "blue", mid = "white", high = "red") + 
+  theme_bw()
