@@ -230,3 +230,20 @@ bxp_B <- ggboxplot(plotDat_boxplot_overtime, x = "B_reclassify", y = protein, co
 
 # all plot together
 cowplot::plot_grid(bxp_H1N1, bxp_H3N2, bxp_B, nrow = 1)
+
+# cor(CD83, other proteins) at transcriptome level -------------------------
+bulkRNAseq_baseline <- iMED_transcripDat %>% t() %>% as.data.frame
+
+CD83_relatedPro <- c("CD1A", "CD1B", "CD1C", "CD1D", "CD1E", "CD40", "CD80", "CD86", "TNF", "CCR7") # based on stringDB
+
+outcome <- matrix(NA, nrow = length(CD83_relatedPro), ncol = 2) %>% as.data.frame
+names(outcome) <- c("p.value", "cor.estimate")
+rownames(outcome) <- CD83_relatedPro
+
+for (i in 1:length(CD83_relatedPro)) {
+  outcome$p.value[i] <- cor.test(bulkRNAseq_baseline$CD83, bulkRNAseq_baseline[[CD83_relatedPro[i]]])$p.value
+  outcome$cor.estimate[i] <- cor.test(bulkRNAseq_baseline$CD83, bulkRNAseq_baseline[[CD83_relatedPro[i]]])$estimate
+}
+
+outcome %>% filter(p.value < 0.05)
+

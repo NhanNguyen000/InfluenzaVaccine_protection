@@ -7,6 +7,7 @@ library(patchwork)
 load("/vol/projects/CIIM/Influenza/Duesseldorf/Influenza_Duesseldorf/scRNAseq/analysis/output/data.RData") # Note: marker.list is based on accumulated previous information (no specific papers)
 metadata <- read.csv2("/vol/projects/CIIM/Influenza/Duesseldorf/Influenza_Duesseldorf/scRNAseq/data/metadata.csv")
 
+data <- RegroupIdents(data, metadata = "celltype") # rename cluster by cell type
 unique(data$vaccination)
 unique(data$celltype)
 
@@ -34,4 +35,8 @@ before_vac %>%
             sort.cell = TRUE, min.cutoff = '1', label = TRUE) 
 
 
+# dotplot for all related protein to CD83 ---------------------------
+CD83_relatedPro <- c("CD83", "CD1A", "CD1B", "CD1C", "CD1D", "CD1E", "CD40", "CD80", "CD86", "TNF", "CCR7") # based on stringDB
 
+DotPlot(object = before_vac, features = CD83_relatedPro) + 
+  theme(axis.text.x = element_text(angle = 90))
