@@ -73,8 +73,8 @@ cohorts$donorSample_all <- iMED$meta2014 %>%
       rename("probandID" = "patientID", "season" = "Season", "time" = "Time") %>%
       mutate(name = probenID, cohort = "ZirFlu",
              time = ifelse(time == "Baseline", "T1", 
-                           ifelse(time == "T1", "T4", 
-                                  ifelse(time == "T2", "T5", time)))) # check time match with visit 1 and 2, and between cohorts
+                           ifelse(time == "T1", "T3", 
+                                  ifelse(time == "T2", "T4", time)))) # check time match with visit 1 and 2, and between cohorts
   ) %>%
   # clean the data
   select(name, time, season, probandID, cohort) %>% relocate(probandID)
@@ -178,7 +178,7 @@ overlapped_metabolites <- intersect(unique(iMED_meboAnnot$Formula), ZirFlu_meboA
 length(overlapped_metabolites)
 
 library(venn)
-res.venn <- list("Season 2014 and 2015" =s unique(iMED_meboAnnot$Formula), 
+res.venn <- list("Season 2014 and 2015" = unique(iMED_meboAnnot$Formula), 
                  "Season 2019 and 2020" = ZirFlu_meboAnnot$Formula)
 v.table <- venn(res.venn)
 
