@@ -113,6 +113,7 @@ selected_DAs <- unique(c(intersect(res.venn$iMED_2015$H1N1_reclassify, res.venn$
 
 selected_DAs <- unique(unlist(res.venn$iMED_2015))
 selected_DAs <- unique(unlist(res.venn_padj))
+#save(selected_DAs, file = "selected_DAPs_padj2015.RData")
 # heatmap
 plotDat <- tstat_longDat %>% 
   filter(valName %in% selected_DAs) %>%
