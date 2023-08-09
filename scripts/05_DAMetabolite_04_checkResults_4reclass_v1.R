@@ -124,12 +124,13 @@ tstat_longDat <- tstat_all %>%
   separate(season, sep = "_", into = c("cohort", "season"))
 
 # selected DAs for the heat map
-selected_DAs <- unique(c(intersect(res.venn$iMED_2015$H1N1_reclassify, res.venn$iMED_2015$H3N2_reclassify),
-                         intersect(res.venn$iMED_2015$B_reclassify, res.venn$iMED_2015$H3N2_reclassify),
-                         intersect(res.venn$iMED_2015$H1N1_reclassify, res.venn$iMED_2015$B_reclassify))) # DAs in at least 2 strains
+# selected_DAs <- unique(c(intersect(res.venn$iMED_2015$H1N1_reclassify, res.venn$iMED_2015$H3N2_reclassify),
+#                          intersect(res.venn$iMED_2015$B_reclassify, res.venn$iMED_2015$H3N2_reclassify),
+#                          intersect(res.venn$iMED_2015$H1N1_reclassify, res.venn$iMED_2015$B_reclassify))) # DAs in at least 2 strains
 
-selected_DAs <- unique(unlist(res.venn$iMED_2015))
+# selected_DAs <- unique(unlist(res.venn$iMED_2015))
 selected_DAs <- unique(unlist(res.venn_padj_2015))
+save(selected_DAs, file = "selected_DAMs_padj2015.RData")
 # heatmap
 plotDat <- tstat_longDat %>% 
   filter(valName %in% selected_DAs) %>%
@@ -169,9 +170,62 @@ plotDat_order %>%
   theme_bw() + 
   theme(axis.text.x = element_text(angle = 30, hjust = 1))
 
-plotDat_order %>% 
-  ggplot(aes(x = group, y = valName, fill = relative_diff)) + 
-  geom_tile() +
-  # geom_text(aes(label = ifelse(is.na(p.value), NA, "*"))) +
-  scale_fill_gradient2(low = "blue", mid = "white", high = "red") + 
-  theme_bw()
+# plot heatmap with metabolites class ------------------------
+library(openxlsx)
+library(ComplexHeatmap)
+
+## load the data ----------------
+load("cohorts_dat.RData")
+
+# metabolite taxonomy with HMDB ids
+mebo_taxo <- read.delim("/vol/projects/CIIM/Influenza/iMED/metabolic/db/hmdb/metabolite_HMDB_taxonomy.csv",
+                        quote = "", header = TRUE)
+
+# link the HMDB ids to Formulas
+mebo_taxo_fomula <- mebo_taxo %>% rownames_to_column("CompoundID") %>% 
+  inner_join(read.xlsx('/vol/projects/CIIM/Influenza/iMED/metabolic/raw_data/tables/DATA_CURATED_reformatted.xlsx',
+                       sheet = 'annotation') %>% fill(ionIdx, .direction = "down")) %>% 
+  filter(Formula %in% colnames(mebo_Dat$iMED_2014)) %>%
+  select(Formula, super_class, class, sub_class) %>% distinct()
+
+length(unique(mebo_taxo_fomula$Formula)) # 499 formulas out of 508 formulas
+
+mebo_taxo_fomula %>% count(super_class)
+mebo_taxo_fomula %>% count(class)
+
+# make the class 
+mebo_taxo_class <- mebo_taxo_fomula %>% select(Formula, class) %>% distinct()
+mebo_classSet <- split(mebo_taxo_class$Formula, mebo_taxo_class$class)
+## check the heatmap ---------------------------------
+plotDat_wide <- plotDat %>% select(valName, group, relative_diff) %>% 
+  pivot_wider(names_from = group, values_from = relative_diff) %>% 
+  column_to_rownames("valName") %>% 
+  select(c("H1N1_LLvsLH", "H1N1_LLvsHL", "H1N1_LLvsHH",
+           "H3N2_LLvsLH", "H3N2_LLvsHL", "H3N2_LLvsHH",
+           "B_LLvsLH", "B_LLvsHL", "B_LLvsHH"))
+
+plotDat_wide %>% 
+  Heatmap(cluster_columns = FALSE, 
+          show_row_dend = FALSE, show_row_names = FALSE)
+
+mebo_used <- mebo_taxo_fomula %>% 
+  select(Formula, super_class) %>% distinct() %>% 
+  filter(Formula %in% rownames(plotDat_wide))
+length(unique(mebo_used$Formula))
+unique(mebo_used$super_class)
+
+mebo_used <- mebo_taxo_fomula %>% 
+  select(Formula, class) %>% distinct() %>% 
+  filter(Formula %in% rownames(plotDat_wide))
+length(unique(mebo_used$Formula))
+unique(mebo_used$class)
+mebo_used %>% count(class) %>% arrange(n)
+
+row_ha = rowAnnotation()
+
+# check if the selected_DAs from 2015 also show the same direction as in other seasons ------------------
+a <- tstat_longDat %>% filter(valName %in% selected_DAs) %>%
+  mutate(trend = ifelse(tstat > 0, 1, -1)) %>%
+  group_by(valName) %>% summarise(n = sum(trend, na.rm = TRUE))
+
+

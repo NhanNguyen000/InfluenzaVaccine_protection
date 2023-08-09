@@ -4,6 +4,7 @@ library(openxlsx)
 
 # load the data ----------------
 load("selected_DAMs.RData") # 45 formulas
+#load("selected_DAMs_padj2015.RData") # 146 formulas
 
 # metabolite taxonomy with HMDB ids
 mebo_taxo <- read.delim("/vol/projects/CIIM/Influenza/iMED/metabolic/db/hmdb/metabolite_HMDB_taxonomy.csv",

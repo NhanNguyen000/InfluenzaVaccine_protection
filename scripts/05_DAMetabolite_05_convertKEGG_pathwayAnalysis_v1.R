@@ -5,8 +5,8 @@ library(tidyverse)
 
 # load data ----------------------------------
 load("cohorts_dat.RData")
-load("selected_DAMs.RData")
-
+#load("selected_DAMs.RData") # 45 formulas
+load("selected_DAMs_padj2015.RData") # 146 formulas
 # convert Formula to KEGG id ------------------
 ## selected DAMs -------------------
 kegg_annot <- c() # KEGG database: using formula to annotate metabolite 
@@ -14,15 +14,16 @@ for (formula in selected_DAs) {
   annot_temp <- keggFind("compound", formula, "formula")
   exact_formula <- annot_temp[which(annot_temp == formula)]
   kegg_annot <- c(kegg_annot, exact_formula)
-} # 45 formulas --> 126 Kegg IDs
+} # 45 formulas --> 126 Kegg IDs, 146 formulas --> 484 kegg IDs
 
 kegg_outcomes <- kegg_annot %>% enframe() %>% distinct() %>%
   rename("cpdId" = "name", "Formula" = "value") %>% 
   separate(col = "cpdId", into = c("cpd", "keggIds"), sep = ":") 
-length(unique(kegg_outcomes$Formula)) # 38 formulas were able to annotate
+length(unique(kegg_outcomes$Formula)) # 38 formulas / 116 formulas were able to annotate
 
 write.table(kegg_outcomes$keggIds, 
-            file = "keggID_DAMs_reclassify_4to2groups.txt",
+            #file = "keggID_DAMs_reclassify_4to2groups.txt",
+            file = "keggID_DAMs_reclassify_4groups.txt",
             col.names = FALSE, row.names = FALSE, quote = FALSE)
 
 ## all the endogenous metabolites used in the lm() model --------------------------
