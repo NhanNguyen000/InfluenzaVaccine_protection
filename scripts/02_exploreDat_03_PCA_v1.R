@@ -30,7 +30,7 @@ load("cohorts_dat.RData")
 metadata_healthy <- cohorts$HAI_all %>% 
   full_join(cohorts$donorInfo_all %>% 
               select(probandID, season, cohort, sex, age, condition)) %>%
-  left_join(cohorts$donorSample_all %>% filter(time == "T1")) %>%
+  left_join(cohorts$donorSample_all %>% filter(time == "d0")) %>%
   filter(condition == "Healthy") %>%
   mutate(group = paste0(cohort, "_", season)) %>%
   mutate_at(vars(contains("reclassify")), ~factor(.x, levels = c("LL", "LH", "HL", "HH")))
@@ -53,7 +53,7 @@ summary(protein_pca)$importance[1:3, 1:5]
 # PCA plot with function
 get.pca_plot(pca = protein_pca, 
              metadat = proteinDat_metadata, 
-             groupType = "season")
+             groupType = "season") + theme(legend.position = "top")
 
 get.pca_plot(pca = protein_pca, 
              metadat = proteinDat_metadata, 
@@ -87,7 +87,7 @@ summary(metabolite_pca)$importance[1:3, 1:5]
 # PCA plot with function
 get.pca_plot(pca = metabolite_pca, 
              metadat = metaboliteDat_metadata, 
-             groupType = "season")
+             groupType = "season") + theme(legend.position = "top")
 
 get.pca_plot(pca = metabolite_pca, 
              metadat = metaboliteDat_metadata, 

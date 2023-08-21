@@ -60,10 +60,10 @@ cohorts$donorSample_all <- iMED$meta2014 %>%
   full_join(iMED$meta2015 %>% 
       select(probandID, ProbenID, name, time) %>% mutate(season = "2015")) %>% 
   mutate(cohort = "iMED",
-         time = ifelse(time == "T1", "T1",
-                       ifelse(time == "T2", "T3",
-                              ifelse(time == "T3", "T4", NA)))) %>% # time T2 and T3 in protein data matched to time T3 (1 week) and T4 (4 weeks) in HAI titer
-  
+  # time T1 (baseline, d0); time T2 and T3 in protein data matched to time T3 (1 week, 6-7 days post-vac) and T4 (4 weeks, 21-35 days post-vac) in HAI titer
+         time = ifelse(time == "T1", "d0",
+                       ifelse(time == "T2", "d7",
+                              ifelse(time == "T3", "d28", NA)))) %>%# label T3 with the middle day d28
   # ZirFlu cohort, 2 seasons
   full_join(
     read_excel("/vol/projects/CIIM/Influenza/ZirrFlu/proteomic/raw_data/ZirrFlu plates final.xlsx",
@@ -71,9 +71,11 @@ cohorts$donorSample_all <- iMED$meta2014 %>%
       select(patientID, probenID, Season, Time) %>% filter(Time != "Bridge") %>%
       rename("probandID" = "patientID", "season" = "Season", "time" = "Time") %>%
       mutate(name = probenID, cohort = "ZirFlu",
-             time = ifelse(time == "Baseline", "T1", 
-                           ifelse(time == "T1", "T3", 
-                                  ifelse(time == "T2", "T4", time)))) # check time match with visit 1 and 2, and between cohorts
+   # time T1 (baseline, d0); time T1 and T2 is for visit 1 (around 1 week, 5-7 days post-vac) and visit 2 (4 weeks, 19-38 days post-vac) in HAI titer 
+   # based on doctor/immunologist data (not based on the date in the protein data) for healthy people (not count for cirrhotic patient data)
+             time = ifelse(time == "Baseline", "d0", 
+                           ifelse(time == "T1", "d7", 
+                                  ifelse(time == "T2", "d28", time)))) # the median of the time range is 27.5, so ball T2 here with 28 day
   ) %>%
   # clean the data
   select(name, time, season, probandID, cohort) %>% relocate(probandID)
@@ -83,14 +85,20 @@ cohorts$HAI_all <- iMED$HAI_2014 %>%
   # iMED pilot cohort (n = 34)
   rename("probandID" = "pID") %>% mutate(season = "2014") %>%
   full_join(iMED$meta2014 %>% select(probandID, responder) %>% distinct()) %>%
-  mutate(ab_H1N1 = ifelse(H1N1_T1 == 0, H1N1_T4, H1N1_T4/H1N1_T1),
-         ab_H3N2 = ifelse(H3N2_T1 == 0, H3N2_T4, H3N2_T4/H3N2_T1),
-         ab_B = ifelse(B_T1 == 0, B_T4, B_T4/B_T1)) %>%
+  setNames(names(.) %>% 
+             stringr::str_replace("_T1", "_d0") %>% 
+             stringr::str_replace("_T4", "_d28")) %>%
+  mutate(ab_H1N1 = ifelse(H1N1_d0 == 0, H1N1_d28, H1N1_d28/H1N1_d0),
+         ab_H3N2 = ifelse(H3N2_d0 == 0, H3N2_d28, H3N2_d28/H3N2_d0),
+         ab_B = ifelse(B_d0 == 0, B_d28, B_d28/B_d0)) %>%
  
   # iMED discovery cohort (n = 200)
   full_join(
     iMED$HAI_2015 %>% rename("probandID" = "X...sample") %>% 
      full_join(iMED$meta2015 %>% select(probandID, matches("ab")) %>% drop_na()) %>%
+      setNames(names(.) %>% 
+                 stringr::str_replace("_T1", "_d0") %>% 
+                 stringr::str_replace("_T4", "_d28")) %>%
       mutate(season = "2015")
   ) %>% 
   mutate(cohort = "iMED") %>% rename("H1N1_abFC" = "ab_H1N1", "H3N2_abFC" = "ab_H3N2", "B_abFC" = "ab_B") %>%
@@ -101,8 +109,7 @@ cohorts$HAI_all <- iMED$HAI_2014 %>%
       full_join(ZirFlu$HAI_2020 %>% mutate(season = "2020")) %>%
       select(patientID, season, matches("d0|d21|abFC"), vaccine_response) %>%
       setNames(names(.) %>% 
-                 stringr::str_replace("_d0", "_T1") %>% 
-                 stringr::str_replace("_d21-35", "_T4")) %>%
+                 stringr::str_replace("_d21-35", "_d28")) %>%
       mutate(responder = ifelse(vaccine_response == "Non", "NR", 
                                 ifelse(vaccine_response == "Single" | vaccine_response == "Double", 
                                        "other", "TR"))) %>%
@@ -110,16 +117,16 @@ cohorts$HAI_all <- iMED$HAI_2014 %>%
   ) %>%
   # clean the data
   mutate(responder = ifelse(responder == "other", "Other", responder)) %>%
-  mutate(across(ends_with("T1") | ends_with("T4") | ends_with("abFC"), # convert antibody titer and abFC to normalize the value distribution
+  mutate(across(ends_with("d0") | ends_with("d28") | ends_with("abFC"), # convert antibody titer and abFC to normalize the value distribution
                 ~log2(.x), .names = "{.col}_log2")) %>%
   mutate(across(ends_with("log2"), ~ifelse(is.infinite(.x), 0, .x)))
 
 
-# summary(cohorts$HAI_all$H1N1_T1) # check the value range
-# summary(cohorts$HAI_all$H1N1_T1_log2)
+# summary(cohorts$HAI_all$H1N1_d0) # check the value range
+# summary(cohorts$HAI_all$H1N1_d0_log2)
 
-# hist(cohorts$HAI_all$H1N1_T1) # show skew distribution
-# hist(cohorts$HAI_all$H1N1_T1_log2) # show less skew distribution
+# hist(cohorts$HAI_all$H1N1_d0) # show skew distribution
+# hist(cohorts$HAI_all$H1N1_d0_log2) # show less skew distribution
 # hist(cohorts$HAI_all$H1N1_abFC)
 # hist(cohorts$HAI_all$H1N1_abFC_log2)
 
@@ -130,19 +137,24 @@ cohorts$MN_all <- iMED$MNbothCohorts %>% rename("probandID" = "X..." )%>%
               distinct() %>% mutate(season = "2014") %>%
               full_join(iMED$meta2015 %>% select(probandID) %>% 
                           distinct() %>% mutate(season = "2015"))) %>%
+  setNames(names(.) %>% 
+             stringr::str_replace("_T1", "_d0") %>% 
+             stringr::str_replace("_T4", "_d28")) %>%
   mutate(cohort = "iMED", 
-         "H1N1_abFC" = ifelse(H1N1_T1 == 0, H1N1_T4, H1N1_T4/H1N1_T1), 
-         "H3N2_abFC" = ifelse(H3N2_T1 == 0, H3N2_T4, H3N2_T4/H3N2_T1), 
-         "B_abFC" = ifelse(B_T1 == 0, B_T4, B_T4/B_T1)) %>%
+         "H1N1_abFC" = ifelse(H1N1_d0 == 0, H1N1_d28, H1N1_d28/H1N1_d0), 
+         "H3N2_abFC" = ifelse(H3N2_d0 == 0, H3N2_d28, H3N2_d28/H3N2_d0), 
+         "B_abFC" = ifelse(B_d0 == 0, B_d28, B_d28/B_d0)) %>%
   # ZirFlu cohorts, season 2019
   full_join(
     ZirFlu$MN_2019 %>% select(-condition, -matches("T3")) %>%
       rename("probandID" = "patientID") %>% 
-      setNames(names(.) %>% stringr::str_replace("_T2", "_T4")) %>%
+      setNames(names(.) %>% 
+                 stringr::str_replace("_T1", "_d0") %>% 
+                 stringr::str_replace("_T2", "_d28")) %>% # it is for visit 2 (around 4 weeks after vaccinations)
       mutate(cohort = "ZirFlu")
   ) %>%
   # clean the data
-  mutate(across(ends_with("T1") | ends_with("T4") | ends_with("abFC"), # convert antibody titer and abFC to normalize the value distribution
+  mutate(across(ends_with("d0") | ends_with("d28") | ends_with("abFC"), # convert antibody titer and abFC to normalize the value distribution
                 ~log2(.x), .names = "{.col}_log2")) %>%
   mutate(across(ends_with("log2"), ~ifelse(is.infinite(.x), 0, .x)))
 

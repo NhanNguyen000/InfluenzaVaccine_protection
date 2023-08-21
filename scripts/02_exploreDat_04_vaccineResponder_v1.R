@@ -10,7 +10,7 @@ load("cohorts_dat.RData")
 metadata_healthy <- cohorts$HAI_all %>% 
   full_join(cohorts$donorInfo_all %>% 
               select(probandID, season, cohort, sex, age, condition)) %>%
-  left_join(cohorts$donorSample_all %>% filter(time == "T1")) %>%
+  left_join(cohorts$donorSample_all %>% filter(time == "d0")) %>%
   filter(condition == "Healthy") %>%
   mutate(group = paste0(cohort, "_", season)) %>%
   mutate_at(vars(contains("reclassify")), ~factor(.x, levels = c("LL", "LH", "HL", "HH")))
@@ -21,7 +21,8 @@ metadata_NRvsR <- metadata_healthy %>%
   select(name, cohort, season, group, sex, responder, ends_with("abFC")) %>%
   pivot_longer(ends_with("abFC"), names_to = "strain", values_to = "strain_response") %>%
   drop_na("strain_response") %>%
-  mutate(strain = gsub("_abFC", "", strain))
+  mutate(strain = gsub("_abFC", "", strain),
+         strain = factor(strain, levels = c("Bvictoria", "Byamagata", "B", "H3N2", "H1N1")))
 
 bars_NRvsR <- metadata_NRvsR %>%
   ggplot(aes(y = strain, fill = strain_response)) +

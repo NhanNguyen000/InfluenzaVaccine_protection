@@ -24,8 +24,8 @@ get.reclassify <- function(dat, baseline_col, abFC_col, baseline_cutoff, abFC_cu
 load("cohorts_dat.RData")
 
 ## cutoff ------------------
-# (baseline < 40 ) == T1_low. (abFC >= 4) == abFC_high
-# (baseline >= 40) == T1_high. (abFC < 4) == abFC_low
+# (baseline < 40 ) == d0_low. (abFC >= 4) == abFC_high
+# (baseline >= 40) == d0_high. (abFC < 4) == abFC_low
 baseline <- 40
 abFC <- 4
 
@@ -33,7 +33,7 @@ strains <- c("H1N1", "H3N2", "B", "Bvictoria", "Byamagata")
 reclassify_temp <- list()
 for (strain in strains) {
   reclassify_temp[[strain]] <- get.reclassify(dat = cohorts$HAI_all, 
-                                              baseline_col = paste0(strain, "_T1"),
+                                              baseline_col = paste0(strain, "_d0"),
                                               abFC_col = paste0(strain, "_abFC"),
                                               baseline_cutoff = baseline,
                                               abFC_cutoff = abFC)

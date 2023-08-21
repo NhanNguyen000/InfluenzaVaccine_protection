@@ -10,7 +10,7 @@ load("cohorts_dat.RData")
 metadata_healthy <- cohorts$HAI_all %>% 
   full_join(cohorts$donorInfo_all %>% 
               select(probandID, season, cohort, sex, age, condition)) %>%
-  left_join(cohorts$donorSample_all %>% filter(time == "T1")) %>%
+  left_join(cohorts$donorSample_all %>% filter(time == "d0")) %>%
   filter(condition == "Healthy") %>%
   mutate(group = paste0(cohort, "_", season)) %>%
   mutate_at(vars(contains("reclassify")), ~factor(.x, levels = c("LL", "LH", "HL", "HH")))
@@ -20,7 +20,8 @@ metadata_4groups <- metadata_healthy %>%
   select(name, cohort, season, group, sex, responder, ends_with("reclassify")) %>%
   pivot_longer(ends_with("reclassify"), names_to = "strain", values_to = "reclassify") %>%
   drop_na("reclassify") %>%
-  mutate(strain = gsub("_reclassify", "", strain))
+  mutate(strain = gsub("_reclassify", "", strain),
+         strain = factor(strain, levels = c("Bvictoria", "Byamagata", "B", "H3N2", "H1N1")))
 
 metadata_4groups %>%
   ggplot(aes(y = strain, fill = reclassify)) +

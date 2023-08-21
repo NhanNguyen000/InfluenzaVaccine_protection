@@ -8,7 +8,7 @@ load("cohorts_dat.RData")
 metadata_healthy <- cohorts$HAI_all %>% 
   full_join(cohorts$donorInfo_all %>% 
               select(probandID, season, cohort, sex, age, condition)) %>%
-  left_join(cohorts$donorSample_all %>% filter(time == "T1")) %>%
+  left_join(cohorts$donorSample_all %>% filter(time == "d0")) %>%
   filter(condition == "Healthy") %>%
   mutate(group = paste0(cohort, "_", season)) %>%
   mutate_at(vars(contains("reclassify")), ~factor(.x, levels = c("LL", "LH", "HL", "HH")))
@@ -38,7 +38,6 @@ metadata_healthy %>%
   stat_compare_means(aes(group = sex), method = "t.test")
 
 # option 2 for boxplot
-
 metadata_healthy %>%
   ggboxplot(x = "sex", y = "age", color = "sex",
             paletter = "jco", add = "jitter") + 
@@ -46,7 +45,7 @@ metadata_healthy %>%
   stat_compare_means(comparisons = list(c("f", "m")), method = "t.test")
 
 metadata_healthy %>%
-  ggboxplot(x = "sex", y = "H1N1_T1_log2", color = "sex",
+  ggboxplot(x = "sex", y = "H1N1_d0_log2", color = "sex",
             paletter = "jco", add = "jitter") + 
   facet_wrap(~season, nrow = 1) + 
   stat_compare_means(comparisons = list(c("f", "m")), method = "t.test")

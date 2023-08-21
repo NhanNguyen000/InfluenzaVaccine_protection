@@ -63,3 +63,13 @@ ZirFlu_timePoint <- ZirFlu_proteinSample %>%
 missmatch_timeRange <- ZirFlu_timePoint %>%
   slice(which(Zeitpunkt_timeDiff != proteinPlate_timeDiff)) # du to the set baseline timepoint for the Z-01-99-085 donor.
 
+# Note: check the time range between (basline - visit 2) and healhty donor ----------------------
+healthyDonors_timeRange <-ZirFlu_timePoint %>% filter(Condition == "Healthy", Zeitpunkt == "02")
+hist(healthyDonors_timeRange$Zeitpunkt_timeDiff %>% as.numeric())
+summary(healthyDonors_timeRange$Zeitpunkt_timeDiff %>% as.numeric()) # The median is 21 days, the range is 14-89 days based on the protein data
+
+#but based on immunologist/doctor data it was 19-38 days, median 27.5 day for healthy donors
+season_2019 <- c(21, 24, 26, 21, 24, 21, 21, 21, 21, 21 ,24, 26, 21, 26, 25, 21, 22, 26, 20, 20, 20, 20, 20, 21, 33, 24, 28, 35, 35, 33, 33, 33 ,35 ,35)
+season_2020 <- c(28, 28, 32, 28, 28, 26, 28, 38, 28, 28, 28, 28, 19, 28, 28, 34, 28, 28, 28, 28, 28, 28, 27, 20, 28, 27, 27, 27, 34, 34, 34, 27)
+timeRange_2season_fromDoctor <- c(season_2019, season_2020)
+summary(timeRange_2season_fromDoctor)
