@@ -149,3 +149,8 @@ plotDat_order %>%
   theme_bw() + 
   theme(axis.text.x = element_text(angle = 30, hjust = 1))  + 
   ggtitle("Metabolite taxonomy class (padj < 0.05)")
+
+# Check the metbaolites belong to taxonomy across the season ---------------
+mebo_classSet$`Fatty Acyls`
+mebo_classSet$`Carboxylic acids and derivatives`
+

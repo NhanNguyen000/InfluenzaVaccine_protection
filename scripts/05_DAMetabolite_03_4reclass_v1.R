@@ -46,6 +46,15 @@ get.limmaRes_perStrain <- function(metadat, inputDat, strain_groups) {
 # load data =======================================================================
 load("cohorts_dat.RData")
 
+load("mebo_filterMzDelta.RData")
+length(intersect(names(mebo_Dat$iMED_2014), mebo_filterMzDelta)) # miss 6 mtabolites if it is the 207 metabolite
+length(intersect(names(mebo_Dat$iMED_2015), mebo_filterMzDelta))
+length(intersect(names(mebo_Dat$ZirFlu_2019), mebo_filterMzDelta))
+length(intersect(names(mebo_Dat$ZirFlu_2020), mebo_filterMzDelta))
+
+filter_mebo <- intersect(names(mebo_Dat$iMED_2014), mebo_filterMzDelta)
+mebo_Dat <- mebo_Dat %>% lapply(function(x) x %>% select(filter_mebo))
+
 ## metadata for all healthy subjects -------------------------
 metadata_healthy <- cohorts$HAI_all %>% 
   full_join(cohorts$donorInfo_all %>% 

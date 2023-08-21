@@ -10,7 +10,7 @@ load("selected_DAMs_padj2015.RData")
 metadata_healthy <- cohorts$HAI_all %>% 
   full_join(cohorts$donorInfo_all %>% 
               select(probandID, season, cohort, sex, age, condition)) %>%
-  left_join(cohorts$donorSample_all %>% filter(time == "T1")) %>%
+  left_join(cohorts$donorSample_all %>% filter(time == "T4")) %>%
   filter(condition == "Healthy") %>%
   mutate_at(vars(contains("reclassify")), ~factor(.x, levels = c("LL", "LH", "HL", "HH")))
 
@@ -96,27 +96,6 @@ mebo <- "C3H6O3"
 
 mebo <- "C5H11NO2S"
 
-mebo <- "C18H32O3" # Linoleic acid metabolism - Reference pathway
-mebo <- "C18H32O4"
-mebo <- "C18H30O2"
-mebo <- "C20H32O2"
-mebo <- "C18H30O3"
-
-mebo <- "C18H30O2" # mebo <- "C18H32O3" # Linoleic acid metabolism - Reference pathway
-mebo <- "C18H28O2"
-mebo <- "C18H30O4"
-mebo <- "C17H28O"
-mebo <- "C9H14O"
-mebo <- "C9H16O3"
-mebo <- "C18H28O3"
-mebo <- "C6H10O"
-mebo <- "C8H14O2"
-mebo <- "C12H20O3"
-mebo <- "C12H20O4"
-mebo <- "C12H18O3"
-mebo <- "C13H20O3"
-
-mebo <- "C5H8O4"
 metadat_boxplot <- inputDat %>% 
   select(season, responder, c(mebo), matches("_abFC|_T1|_T4|_reclassify")) %>%
   mutate(H1N1_abFC = ifelse(H1N1_reclassify == "LH" |H1N1_reclassify == "HH", "R", "NR")) %>%
@@ -199,7 +178,7 @@ mebo <- "C14H24O2"
 mebo <- "C14H26O2"
 mebo <- "C14H28O2"
 metadat_boxplot %>% ggboxplot(x = "H1N1_reclassify", y = mebo,
-                paletter = "jco", add = "jitter") + facet_wrap(~season, nrow = 1) +
+                              paletter = "jco", add = "jitter") + facet_wrap(~season, nrow = 1) +
   stat_compare_means(comparisons = compare_reClass, method = "t.test")
 
 a <- metadat_boxplot %>% mutate(ratio = C18H32O2 - C18H36O2)
@@ -215,7 +194,7 @@ a <- metadat_boxplot %>% mutate(ratio = C14H22O2 - C14H28O2)
 a <- metadat_boxplot %>% mutate(ratio = C14H24O2 - C14H28O2)
 a <- metadat_boxplot %>% mutate(ratio = C14H26O2 - C14H28O2)
 a %>% ggboxplot(x = "H1N1_reclassify", y = "ratio",
-          paletter = "jco", add = "jitter") + facet_wrap(~season, nrow = 1) +
+                paletter = "jco", add = "jitter") + facet_wrap(~season, nrow = 1) +
   stat_compare_means(comparisons = compare_reClass, method = "t.test")
 
 

@@ -17,7 +17,6 @@ get.log2 <- function(dat) {
 load("metaDat_antibody.RData")
 load("protein_normDat.RData")
 load("metaboliteDat.RData")
-
 # donor info ---------------------------------------
 cohorts <- list()
 

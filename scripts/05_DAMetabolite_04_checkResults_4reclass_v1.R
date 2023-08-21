@@ -19,6 +19,21 @@ get.DAs <- function(resLimma) {
   return(res_DA)
 }
 
+get.p.value <- function(resLimma) {
+  # Aim: extract the DAPs/DAMs with p.value from linnear comparision comparison
+  # following the get.limmaRes result
+  
+  res_DA_temp <- resLimma$p.value %>% as.data.frame %>% 
+    select(matches("reclassify"))
+  
+  res_DA <- list()
+  res_DA$LLvsLH <- res_DA_temp %>% select(matches("LH")) %>% drop_na()
+  res_DA$LLvsHL <- res_DA_temp %>% select(matches("HL")) %>% drop_na()
+  res_DA$LLvsHH <- res_DA_temp %>% select(matches("HH")) %>% drop_na()
+  
+  return(res_DA)
+}
+
 get.tstat <- function(resLimma) {
   # Aim: extract the t-statistic value from linnear comparision comparison
   # following the get.limmaRes result
@@ -53,6 +68,9 @@ get.plotDat_clusterRow <- function(plotDat, colName, valColumn) {
 load("resMebo_4reclass.RData")
 
 # significant proteins / metabolites ---------------------------------------------------------
+pvals <- resMebo_4reclass %>% 
+  lapply(function(x) x %>% lapply(function(y) get.p.value(y)))
+
 DAs <- resMebo_4reclass %>% 
   lapply(function(x) x %>% lapply(function(y) get.DAs(y)))
 
@@ -227,5 +245,6 @@ row_ha = rowAnnotation()
 a <- tstat_longDat %>% filter(valName %in% selected_DAs) %>%
   mutate(trend = ifelse(tstat > 0, 1, -1)) %>%
   group_by(valName) %>% summarise(n = sum(trend, na.rm = TRUE))
-
+a <- tstat_longDat %>% mutate(compare = paste0(season, "_", strain))
+b <- a %>% filter(valName %in% mebo_classSet$`Fatty Acyls`)
 
