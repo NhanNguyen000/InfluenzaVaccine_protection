@@ -15,7 +15,7 @@ metadata_healthy <- cohorts$HAI_all %>%
               select(probandID, season, cohort, sex, age, condition)) %>%
   left_join(cohorts$donorSample_all %>% filter(time == "d0")) %>%
   filter(condition == "Healthy") %>%
-  arrange(season, H1N1_reclassify, H1N1_d0, H1N1_abFC, sex)
+  arrange(season, H1N1_reclassify, H1N1_abFC)
 
 
 # assign the positions (start and end) for each participant per seasons
@@ -62,6 +62,9 @@ write.table(H1N1_abFC_log2, file = 'processedDat/H1N1_abFC_log2.txt', row.names 
 H1N1_d0 <- metadata_healthy_v2 %>% select(season, start, end, H1N1_d0)
 write.table(H1N1_d0, file = 'processedDat/H1N1_d0.txt', row.names = F, col.names = F, quote = F)
 
+H1N1_d0_log2 <- metadata_healthy_v2 %>% select(season, start, end, H1N1_d0_log2)
+write.table(H1N1_d0_log2, file = 'processedDat/H1N1_d0_log2.txt', row.names = F, col.names = F, quote = F)
+
 # step 2: H3N2 strain files
 # H3N2 abFC
 # H3N2_abFC <- metadata_healthy_v2 %>% select(season, start, end, H3N2_abFC)
@@ -74,6 +77,9 @@ write.table(H3N2_abFC_log2, file = 'processedDat/H3N2_abFC_log2.txt', row.names 
 H3N2_d0 <- metadata_healthy_v2 %>% select(season, start, end, H3N2_d0)
 write.table(H3N2_d0, file = 'processedDat/H3N2_d0.txt', row.names = F, col.names = F, quote = F)
 
+H3N2_d0_log2 <- metadata_healthy_v2 %>% select(season, start, end, H3N2_d0_log2)
+write.table(H3N2_d0_log2, file = 'processedDat/H3N2_d0_log2.txt', row.names = F, col.names = F, quote = F)
+
 # step 3: B strains files
 # B abFC for season 2014, 2015
 B_abFC_log2 <- metadata_healthy_v2 %>% select(season, start, end, B_abFC_log2) %>% drop_na()
@@ -83,6 +89,9 @@ write.table(B_abFC_log2, file = 'processedDat/B_abFC_log2.txt', row.names = F, c
 B_d0 <- metadata_healthy_v2 %>% select(season, start, end, B_d0) %>% drop_na()
 write.table(B_d0, file = 'processedDat/B_d0.txt', row.names = F, col.names = F, quote = F)
 
+B_d0_log2 <- metadata_healthy_v2 %>% select(season, start, end, B_d0_log2) %>% drop_na()
+write.table(B_d0_log2, file = 'processedDat/B_d0_log2.txt', row.names = F, col.names = F, quote = F)
+
 # Bvictoria abFC for season 2019, 2020
 Bvictoria_abFC_log2 <- metadata_healthy_v2 %>% select(season, start, end, Bvictoria_abFC_log2) %>% drop_na()
 write.table(Bvictoria_abFC_log2, file = 'processedDat/Bvictoria_abFC_log2.txt', row.names = F, col.names = F, quote = F)
@@ -91,6 +100,9 @@ write.table(Bvictoria_abFC_log2, file = 'processedDat/Bvictoria_abFC_log2.txt', 
 Bvictoria_d0 <- metadata_healthy_v2 %>% select(season, start, end, Bvictoria_d0) %>% drop_na()
 write.table(Bvictoria_d0, file = 'processedDat/Bvictoria_d0.txt', row.names = F, col.names = F, quote = F)
 
+Bvictoria_d0_log2 <- metadata_healthy_v2 %>% select(season, start, end, Bvictoria_d0_log2) %>% drop_na()
+write.table(Bvictoria_d0_log2, file = 'processedDat/Bvictoria_d0_log2.txt', row.names = F, col.names = F, quote = F)
+
 # Byamagata abFC for season 2019, 2020
 Byamagata_abFC_log2 <- metadata_healthy_v2 %>% select(season, start, end, Byamagata_abFC_log2) %>% drop_na()
 write.table(Byamagata_abFC_log2, file = 'processedDat/Byamagata_abFC_log2.txt', row.names = F, col.names = F, quote = F)
@@ -98,3 +110,6 @@ write.table(Byamagata_abFC_log2, file = 'processedDat/Byamagata_abFC_log2.txt', 
 # B d0 for season 2019, 2020
 Byamagata_d0 <- metadata_healthy_v2 %>% select(season, start, end, Byamagata_d0) %>% drop_na()
 write.table(Byamagata_d0, file = 'processedDat/Byamagata_d0.txt', row.names = F, col.names = F, quote = F)
+
+Byamagata_d0_log2 <- metadata_healthy_v2 %>% select(season, start, end, Byamagata_d0_log2) %>% drop_na()
+write.table(Byamagata_d0_log2, file = 'processedDat/Byamagata_d0_log2.txt', row.names = F, col.names = F, quote = F)
