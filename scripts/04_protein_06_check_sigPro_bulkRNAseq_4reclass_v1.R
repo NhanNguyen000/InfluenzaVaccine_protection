@@ -46,7 +46,7 @@ get.limmaRes_perStrain <- function(metadat, inputDat, strain_groups) {
 load("/vol/projects/CIIM/Influenza/iMED/transcriptomic/transcriptomeDF.RData")
 # View(transcriptomeList[[1]])
 # View(transcriptomeList[[2]])
-iMED_transcrip_T1 <- transcriptomeList[[2]] %>% filter(SampleTime == "T1")
+iMED_transcrip_T1 <- transcriptomeList[[2]] %>% filter(SampleTime == "T1") # time T1 in trancriptome = d0
 iMED_transcripDat <- transcriptomeList[[1]] %>% as.data.frame %>% 
   select(iMED_transcrip_T1$SampleName)
 
@@ -56,7 +56,7 @@ load("cohorts_dat.RData")
 metadata_healthy <- cohorts$HAI_all %>% 
   full_join(cohorts$donorInfo_all %>% 
               select(probandID, season, cohort, sex, age, condition)) %>%
-  left_join(cohorts$donorSample_all %>% filter(time == "T1")) %>%
+  left_join(cohorts$donorSample_all %>% filter(time == "d0")) %>%
   filter(condition == "Healthy") %>%
   mutate_at(vars(contains("reclassify")), ~factor(.x, levels = c("LL", "LH", "HL", "HH")))
 
@@ -118,7 +118,7 @@ plotDat_boxplot <- metadat_iMED_2015 %>%
   full_join(inputDat_iMED_2015 %>% t() %>% 
               as.data.frame %>% select(protein) %>% rownames_to_column("SampleName")) %>%
   mutate(H1N1_abFC = ifelse(H1N1_reclassify == "LH" |H1N1_reclassify == "HH", "R", "NR")) %>%
-  mutate(H1N1_abBaseline = ifelse(H1N1_T1 > 40, "high", "low")) %>%
+  mutate(H1N1_abBaseline = ifelse(H1N1_d0 > 40, "high", "low")) %>%
   mutate(H1N1_abBaseline = factor(H1N1_abBaseline, levels = c("low", "high")))
 
 
@@ -130,7 +130,7 @@ plotDat_boxplot %>% count(B_reclassify)
 compare_responder <- list( c("NR", "Other"), c("Other", "TR"), c("NR", "TR") )
 compare_reClass <- list( c("LL", "LH"), c("LL", "HL"), c("LL", "HH"))
 compare_abFC <- list(c("R", "NR"))
-compare_abT1 <- list(c("low", "high"))
+compare_abD0 <- list(c("low", "high"))
 
 # based on reclassification 
 cowplot::plot_grid(
@@ -157,7 +157,7 @@ ggboxplot(plotDat_boxplot, x = "H1N1_abFC", y = protein,
 # based on abT1: low Ab vs high Ab
 ggboxplot(plotDat_boxplot, x = "H1N1_abBaseline", y = protein,
           paletter = "jco", add = "jitter") + facet_wrap(~season, nrow = 1) + 
-  stat_compare_means(comparisons = compare_abT1, method = "t.test")
+  stat_compare_means(comparisons = compare_abD0, method = "t.test")
 
 # based on responders group: NR, other, TR
 ggboxplot(plotDat_boxplot, x = "responder", y = protein,
@@ -165,9 +165,8 @@ ggboxplot(plotDat_boxplot, x = "responder", y = protein,
   stat_compare_means(comparisons = compare_responder, method = "t.test")
 
 # boxplot for selected proteins  overtime ------------------------------------------
-
 iMED_transcrip_overtime <- transcriptomeList[[2]] %>%
-  filter(SampleTime %in% c("T1", "T4"))
+  filter(SampleTime %in% c("T1", "T4")) # time T1 in trancriptome = d0, T4 = d28
 
 iMED_transcripDat <- transcriptomeList[[1]] %>% as.data.frame %>% 
   select(iMED_transcrip_overtime$SampleName)
@@ -244,6 +243,28 @@ for (i in 1:length(CD83_relatedPro)) {
   outcome$p.value[i] <- cor.test(bulkRNAseq_baseline$CD83, bulkRNAseq_baseline[[CD83_relatedPro[i]]])$p.value
   outcome$cor.estimate[i] <- cor.test(bulkRNAseq_baseline$CD83, bulkRNAseq_baseline[[CD83_relatedPro[i]]])$estimate
 }
-
+outcome$padj <- p.adjust(outcome$p.value, method = "fdr")
 outcome %>% filter(p.value < 0.05)
+outcome %>% filter(padj < 0.05)
 
+# scatter plots
+plot_CD83_CD40 <- bulkRNAseq_baseline %>%
+  ggplot(aes(x = CD83, y = CD40)) +
+  geom_point() +
+  geom_smooth(method = "lm", se=FALSE) + stat_cor() + 
+  theme_classic()
+
+plot_CD83_CD80 <- bulkRNAseq_baseline %>%
+  ggplot(aes(x = CD83, y = CD80)) +
+  geom_point() +
+  geom_smooth(method = "lm", se=FALSE) + stat_cor() + 
+  theme_classic()
+
+
+plot_CD83_CCR7 <- bulkRNAseq_baseline %>%
+  ggplot(aes(x = CD83, y = CCR7)) +
+  geom_point() +
+  geom_smooth(method = "lm", se=FALSE) + stat_cor() + 
+  theme_classic()
+
+cowplot::plot_grid(plot_CD83_CD40, plot_CD83_CD80, plot_CD83_CCR7, nrow =1)

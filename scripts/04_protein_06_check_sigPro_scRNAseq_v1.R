@@ -16,6 +16,9 @@ after_vac <- subset(x = data, subset = vaccination == "after") # subset only scR
 
 # specific protein ---------------------
 protein <- "CD83"
+protein <- "CD40"
+protein <- "CD80"
+protein <- "CCR7"
 before_vac %>% 
   VlnPlot(features =protein, group.by = "celltype") + NoLegend()
 
@@ -24,7 +27,7 @@ after_vac %>%
 
 data %>%
   VlnPlot(features =protein, split.by = "vaccination", group.by = "celltype", 
-                 pt.size = 0, combine = FALSE)
+                 combine = FALSE)
 
 # UMAP --------------------------------------
 before_vac %>% 

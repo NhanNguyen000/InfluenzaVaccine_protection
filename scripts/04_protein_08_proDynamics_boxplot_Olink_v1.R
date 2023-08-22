@@ -23,7 +23,7 @@ protein <- "CD83"
 protein <- "IL15"
 metadat_boxplot <- inputDat %>% 
   select(probandID, season, responder, time, c(protein),
-         matches("_abFC|_T1|_T4|_reclassify")) %>% filter(time %in% c("T1", "T4"))
+         matches("_abFC|_d0|_d28|_reclassify")) %>% filter(time %in% c("d0", "d28"))
 
 # boxplots for each timepoint, per group, per season -------------
 ggboxplot(metadat_boxplot, x = "H1N1_reclassify", y = protein, color = "time",
@@ -45,7 +45,7 @@ stat.test <- metadat_boxplot2 %>%
 
 bxp <- ggboxplot(metadat_boxplot, x = "H1N1_reclassify", y = protein, color = "time",
                  paletter = "jco", add = "jitter") + facet_wrap(~season, nrow = 1)
-bxp + stat_pvalue_manual(stat.test, label = "p.signif")
+bxp + stat_pvalue_manual(stat.test, label = "p.signif") + theme(legend.position = "right")
 
 # compare 2 independent samples -------------------
 compare_means(CD83 ~ time, data = metadat_boxplot, 
