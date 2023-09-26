@@ -73,7 +73,6 @@ ranks_dat <- tstat_dat %>%
            lapply(function(y) y %>% 
                     lapply(function(z) z %>% 
                              dplyr::select(Formula, value) %>% deframe(.))))
-# stop here --------------------------
 ranks_dat2 <- ranks_dat %>%
   lapply(function(x) x %>% lapply(function(y) y %>% map(discard, is.na) %>% compact()))
 
@@ -95,7 +94,14 @@ fgsea_padj_names <- fgsea_padj %>%
                     lapply(function(z) z %>% dplyr::select(pathway)) %>% unlist())) %>%
   unlist() %>% unique() # 8 pathways are unique
 
-# plot the sig. pathway (padj < 0.05) for 2015 -----------------
+# plot the sig. pathway (padj < 0.05) all seasons -----------------
+fgsea_res <- ranks_dat2 %>%
+  lapply(function(x) x %>% 
+           lapply(function(y) y %>%
+                    lapply(function(z) fgsea(pathways = mebo_classSet, stats=z, nPerm = 5000) %>%
+                             as_tibble() %>% arrange(desc(NES)))))
+
+
 gsea_total <- fgsea_res %>% 
   lapply(function(x) x %>% 
            lapply(function(y) y %>% 
@@ -109,7 +115,32 @@ gsea_total <- fgsea_res %>%
 gsea_plot <- gsea_total %>% filter(padj < 0.05) %>%
   rename("Number of Metabolites" = "size") 
 
-gsea_plot %>% filter(year == "2015") %>%
+gsea_plot %>% #filter(year == "2015") %>%
+  ggplot(aes(x = -log10(padj), y = pathway, 
+             size = `Number of Metabolites`, color = compare)) + 
+  geom_point() + 
+  facet_grid(strain ~., scales = "free_y", space = "free") + 
+  xlim(c(0, 8)) + 
+  theme_bw()
+
+# plot the sig. pathway (padj < 0.05) for 2015 -----------------
+fgsea_res2015 <- ranks_dat$iMED_2015 %>%
+  lapply(function(x) x %>% 
+           lapply(function(y) fgsea(pathways = mebo_classSet, stats=y, nPerm = 5000) %>%
+                    as_tibble() %>% arrange(desc(NES))))
+
+
+gsea_total2015 <- fgsea_res2015 %>% 
+  lapply(function(x) x %>% 
+           imap(~mutate(.x, compare = .y)) %>% purrr::reduce(full_join)) %>%
+  imap(~mutate(.x, strain = .y)) %>% purrr::reduce(full_join) %>%
+  mutate(compare = gsub("reclassify", "LLvs", compare),
+         strain = gsub("_reclassify", "", strain))
+
+gsea_plot2015 <- gsea_total2015 %>% filter(padj < 0.05) %>%
+  rename("Number of Metabolites" = "size") 
+
+gsea_plot2015 %>% 
   ggplot(aes(x = -log10(padj), y = pathway, 
              size = `Number of Metabolites`, color = compare)) + 
   geom_point() + 
@@ -121,6 +152,22 @@ gsea_plot %>% filter(year == "2015") %>%
 seleted_pathways <- gsea_total %>% filter(padj < 0.05) %>% 
   select(pathway) %>% distinct() %>% unlist()
 
+## all seasons ----------------------------------
+plotDat <- gsea_total %>% 
+  filter(pathway %in% seleted_pathways) %>%
+  mutate(compare = paste0(year, "_",strain, "_", compare))
+
+plotDat %>%
+  ggplot(aes(x = compare, y = pathway, fill = NES)) + 
+  geom_tile() +
+  geom_text(aes(label = ifelse(padj < 0.05, "*", NA))) +
+  scale_fill_gradientn(limits = c(-3, 3), colors = c("blue", "white", "red"), na.value = "grey") +
+  theme_bw() + 
+  theme(axis.text.x = element_text(angle = 30, hjust = 1))  + 
+  ggtitle("Metabolite taxonomy class (padj < 0.05)")
+
+
+## for season 2015 -----------------------------------
 plotDat_2015 <- gsea_total %>% 
   filter(pathway %in% seleted_pathways, year == "2015") %>%
   mutate(compare = paste0(strain, "_", compare),

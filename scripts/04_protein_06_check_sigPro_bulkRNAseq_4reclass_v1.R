@@ -1,5 +1,7 @@
 rm(list = ls())
 library(ggpubr)
+library(tidyverse)
+library(rstatix)
 
 get.limmaRes <- function(metaDat, inputDat) {
   # Aim: identify DE proteins/metabolites correct with sex, age, and reclassify (the interested vaccine response reclassification groups) 
@@ -231,7 +233,11 @@ bxp_B <- ggboxplot(plotDat_boxplot_overtime, x = "B_reclassify", y = protein, co
 cowplot::plot_grid(bxp_H1N1, bxp_H3N2, bxp_B, nrow = 1)
 
 # cor(CD83, other proteins) at transcriptome level -------------------------
-bulkRNAseq_baseline <- iMED_transcripDat %>% t() %>% as.data.frame
+bulkRNAseq_T1_T4 <- iMED_transcripDat %>% t() %>% as.data.frame
+
+bulkRNAseq_baseline <- iMED_transcripDat %>% 
+  select(iMED_transcrip_T1$SampleName) %>%
+  t() %>% as.data.frame
 
 CD83_relatedPro <- c("CD1A", "CD1B", "CD1C", "CD1D", "CD1E", "CD40", "CD80", "CD86", "TNF", "CCR7") # based on stringDB
 

@@ -10,7 +10,7 @@ load("selected_DAMs_padj2015.RData")
 metadata_healthy <- cohorts$HAI_all %>% 
   full_join(cohorts$donorInfo_all %>% 
               select(probandID, season, cohort, sex, age, condition)) %>%
-  left_join(cohorts$donorSample_all %>% filter(time == "T1")) %>%
+  left_join(cohorts$donorSample_all %>% filter(time == "d0")) %>%
   filter(condition == "Healthy") %>%
   mutate_at(vars(contains("reclassify")), ~factor(.x, levels = c("LL", "LH", "HL", "HH")))
 
@@ -84,17 +84,17 @@ mebo <- "C10H15N5O10P2"
 mebo <- "C4H6O5"
 mebo <- "C6H8N2O3"
 mebo <- "C9H9NO4"
-mebo <- "C6H14N2O2"
+mebo <- "C6H14N2O2" # lysine
 mebo <- "C5H9N3"
 mebo <- "C2H7NO3S"
 mebo <- "C5H7NO3"
-mebo <- "C4H7NO4"
-mebo <- "C2H4O3"
+mebo <- "C4H7NO4" # aspartic acid
+mebo <- "C2H4O3" # glycolic acid
 
-mebo <- "C3H7NO2S"
+mebo <- "C3H7NO2S" # cysteine
 mebo <- "C3H6O3"
 
-mebo <- "C5H11NO2S"
+mebo <- "C5H11NO2S" # methioniness
 
 mebo <- "C18H32O3" # Linoleic acid metabolism - Reference pathway
 mebo <- "C18H32O4"
@@ -118,9 +118,9 @@ mebo <- "C13H20O3"
 
 mebo <- "C5H8O4"
 metadat_boxplot <- inputDat %>% 
-  select(season, responder, c(mebo), matches("_abFC|_T1|_T4|_reclassify")) %>%
+  select(season, responder, c(mebo), matches("_abFC|_d0|_d28|_reclassify")) %>%
   mutate(H1N1_abFC = ifelse(H1N1_reclassify == "LH" |H1N1_reclassify == "HH", "R", "NR")) %>%
-  mutate(H1N1_abBaseline = ifelse(H1N1_T1 > 40, "high", "low")) %>%
+  mutate(H1N1_abBaseline = ifelse(H1N1_d0 > 40, "high", "low")) %>%
   mutate(H1N1_abBaseline = factor(H1N1_abBaseline, levels = c("low", "high")))
 
 # based on reclassification 
@@ -178,9 +178,9 @@ mebos <- c("C20H30O2", "C20H32O2", "C20H36O2", "C20H38O2", "C20H40O2",
            "C14H22O2", "C14H24O2", "C14H26O2", "C14H28O2")
 
 metadat_boxplot <- inputDat %>% 
-  select(season, responder, c(mebos), matches("_abFC|_T1|_T4|_reclassify")) %>%
+  select(season, responder, c(mebos), matches("_abFC|_d0|_d28|_reclassify")) %>%
   mutate(H1N1_abFC = ifelse(H1N1_reclassify == "LH" |H1N1_reclassify == "HH", "R", "NR")) %>%
-  mutate(H1N1_abBaseline = ifelse(H1N1_T1 > 40, "high", "low")) %>%
+  mutate(H1N1_abBaseline = ifelse(H1N1_d0 > 40, "high", "low")) %>%
   mutate(H1N1_abBaseline = factor(H1N1_abBaseline, levels = c("low", "high")))
 
 mebo <- "C20H30O2"
@@ -198,6 +198,7 @@ mebo <- "C14H22O2"
 mebo <- "C14H24O2"
 mebo <- "C14H26O2"
 mebo <- "C14H28O2"
+
 metadat_boxplot %>% ggboxplot(x = "H1N1_reclassify", y = mebo,
                 paletter = "jco", add = "jitter") + facet_wrap(~season, nrow = 1) +
   stat_compare_means(comparisons = compare_reClass, method = "t.test")
@@ -214,6 +215,7 @@ a <- metadat_boxplot %>% mutate(ratio = C20H30O2 - C20H40O2)
 a <- metadat_boxplot %>% mutate(ratio = C14H22O2 - C14H28O2)
 a <- metadat_boxplot %>% mutate(ratio = C14H24O2 - C14H28O2)
 a <- metadat_boxplot %>% mutate(ratio = C14H26O2 - C14H28O2)
+
 a %>% ggboxplot(x = "H1N1_reclassify", y = "ratio",
           paletter = "jco", add = "jitter") + facet_wrap(~season, nrow = 1) +
   stat_compare_means(comparisons = compare_reClass, method = "t.test")

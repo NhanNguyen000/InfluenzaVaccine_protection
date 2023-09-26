@@ -3,8 +3,10 @@ library(tidyverse)
 library(openxlsx)
 
 # load the data ----------------
-load("selected_DAMs.RData") # 45 formulas
-#load("selected_DAMs_padj2015.RData") # 146 formulas
+load("cohorts_dat.RData")
+
+#load("selected_DAMs.RData") # 45 formulas
+load("selected_DAMs_padj2015.RData") # 146 formulas
 
 # metabolite taxonomy with HMDB ids
 mebo_taxo <- read.delim("/vol/projects/CIIM/Influenza/iMED/metabolic/db/hmdb/metabolite_HMDB_taxonomy.csv",
@@ -14,16 +16,26 @@ mebo_taxo <- read.delim("/vol/projects/CIIM/Influenza/iMED/metabolic/db/hmdb/met
 mebo_taxo_fomula <- mebo_taxo %>% rownames_to_column("CompoundID") %>% 
   inner_join(read.xlsx('/vol/projects/CIIM/Influenza/iMED/metabolic/raw_data/tables/DATA_CURATED_reformatted.xlsx',
                        sheet = 'annotation') %>% fill(ionIdx, .direction = "down")) %>% 
-  filter(Formula %in% selected_DAs) %>%
+  filter(Formula %in% names(mebo_Dat$iMED_2015)) %>%
   select(Formula, super_class, class, sub_class) %>% distinct()
 
-length(unique(mebo_taxo_fomula$Formula)) # get all 45 formulas out of 45 formulas
-
+length(unique(mebo_taxo_fomula$Formula)) 
 mebo_taxo_fomula %>% count(super_class)
 mebo_taxo_fomula %>% count(class)
 
+meboSig_taxo_fomula <- mebo_taxo %>% rownames_to_column("CompoundID") %>% 
+  inner_join(read.xlsx('/vol/projects/CIIM/Influenza/iMED/metabolic/raw_data/tables/DATA_CURATED_reformatted.xlsx',
+                       sheet = 'annotation') %>% fill(ionIdx, .direction = "down")) %>% 
+  filter(Formula %in% selected_DAs) %>%
+  select(Formula, super_class, class, sub_class) %>% distinct()
+
+length(unique(meboSig_taxo_fomula$Formula)) 
+
+meboSig_taxo_fomula %>% count(super_class)
+meboSig_taxo_fomula %>% count(class)
+
 # modify the class
-mebo_taxo_fomula2 <- mebo_taxo_fomula %>% add_count(class) %>%
+mebo_taxo_fomula2 <- meboSig_taxo_fomula %>% add_count(class) %>%
   mutate(metabolite_class = ifelse(n >= 5, class, "other"))
 
 # pie chart for class proportion in DAMs---------------------
@@ -46,3 +58,14 @@ PieDonut(mebo_taxo_fomula2, aes(super_class, class),
          showPieName = FALSE, 
          title = "Distribution of gender per season")
 
+# metabolite class proportion between metabolite background and DAMs ---------------------
+mebo_taxo_fomula3 <- meboSig_taxo_fomula %>% mutate(type = "sigMebo") %>%
+  full_join(mebo_taxo_fomula %>% mutate(type = "measuredMebo")) %>% 
+  add_count(class) %>%
+  mutate(metabolite_class = ifelse(n >= 100, class, "Other"))
+
+mebo_taxo_fomula3 %>%
+  ggplot(aes(x = type, fill = metabolite_class)) + 
+  geom_bar(position = "fill") + 
+  theme_bw() + 
+  theme(axis.text.x = element_text(angle = 30, hjust = 1)) 

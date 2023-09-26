@@ -21,11 +21,15 @@ inputDat <- mebo_Dat %>%
 # boxplot for T1, T4 ================================
 mebo <- "C3H6O4"
 mebo <- "C18H30O2"
+mebo <- "C18H32O2"
 mebo <- "C18H36O2"
+
+mebo <- "C6H14N2O2" # lysine
+mebo <- "C3H7NO2S" # cysteine
 
 metadat_boxplot <- inputDat %>% 
   select(probandID, season, responder, time, c(mebo),
-         matches("_abFC|_T1|_T4|_reclassify")) %>% filter(time %in% c("T1", "T4"))
+         matches("_abFC|_d0|_d28|_reclassify")) %>% filter(time %in% c("d0", "d28"))
 
 # boxplots for each timepoint, per group, per season -------------
 ggboxplot(metadat_boxplot, x = "H1N1_reclassify", y = mebo, color = "time",
@@ -37,7 +41,10 @@ stat.test <- metadat_boxplot2 %>%
   group_by(season, H1N1_reclassify) %>%  
  # t_test(C3H6O4 ~ time) %>% 
  # t_test(C18H30O2 ~ time) %>% 
-  t_test(C18H36O2 ~ time) %>% 
+ # t_test(C18H32O2 ~ time) %>%
+ # t_test(C18H36O2 ~ time) %>% 
+ # t_test(C6H14N2O2 ~ time) %>%
+  t_test(C3H7NO2S ~ time) %>%
   add_xy_position() %>% add_significance() %>%
   mutate(xmin = ifelse(H1N1_reclassify == "LL", 0.9, 
                        ifelse(H1N1_reclassify == "LH", 1.9,

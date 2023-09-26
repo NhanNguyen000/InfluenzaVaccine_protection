@@ -10,7 +10,7 @@ load("selected_DAMs_padj2015.RData")
 metadata_healthy <- cohorts$HAI_all %>% 
   full_join(cohorts$donorInfo_all %>% 
               select(probandID, season, cohort, sex, age, condition)) %>%
-  left_join(cohorts$donorSample_all %>% filter(time == "T4")) %>%
+  left_join(cohorts$donorSample_all %>% filter(time == "d28")) %>%
   filter(condition == "Healthy") %>%
   mutate_at(vars(contains("reclassify")), ~factor(.x, levels = c("LL", "LH", "HL", "HH")))
 
@@ -97,9 +97,9 @@ mebo <- "C3H6O3"
 mebo <- "C5H11NO2S"
 
 metadat_boxplot <- inputDat %>% 
-  select(season, responder, c(mebo), matches("_abFC|_T1|_T4|_reclassify")) %>%
+  select(season, responder, c(mebo), matches("_abFC|_d0|_d28|_reclassify")) %>%
   mutate(H1N1_abFC = ifelse(H1N1_reclassify == "LH" |H1N1_reclassify == "HH", "R", "NR")) %>%
-  mutate(H1N1_abBaseline = ifelse(H1N1_T1 > 40, "high", "low")) %>%
+  mutate(H1N1_abBaseline = ifelse(H1N1_d0 > 40, "high", "low")) %>%
   mutate(H1N1_abBaseline = factor(H1N1_abBaseline, levels = c("low", "high")))
 
 # based on reclassification 
