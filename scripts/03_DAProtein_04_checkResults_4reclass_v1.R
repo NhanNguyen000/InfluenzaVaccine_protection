@@ -74,6 +74,15 @@ padj_2015 <- resPro_4reclass$iMED_2015 %>%
   lapply(function(x) x %>% 
            eBayes %>% topTable(n = Inf, sort.by = "n") %>% 
            filter(adj.P.Val < 0.05)) # no p-adj significant (<0.05) in other seasons
+a1 <- a %>% topTable(n = Inf, sort.by = "n") 
+a2 <- a %>% topTable(n = Inf, coef = c(2:6),  sort.by = "n") 
+a2 <- a %>% topTable(n = Inf, coef = c(2:6),  sort.by = "n") 
+a3 <- a %>% topTable(n = Inf, coef = c(4:6),  sort.by = "n") %>%
+  mutate(fdr =  p.adjust(P.Value, method = "fdr"))
+
+a3 <- a %>% topTable(n = Inf, coef = c(4:6),  sort.by = "n") %>%
+  filter(adj.P.Val < 0.05)
+
 
 res.venn_padj <- padj_2015 %>% 
   lapply(function(x) x %>% rownames(x))
