@@ -74,15 +74,6 @@ padj_2015 <- resPro_4reclass$iMED_2015 %>%
   lapply(function(x) x %>% 
            eBayes %>% topTable(n = Inf, sort.by = "n") %>% 
            filter(adj.P.Val < 0.05)) # no p-adj significant (<0.05) in other seasons
-a1 <- a %>% topTable(n = Inf, sort.by = "n") 
-a2 <- a %>% topTable(n = Inf, coef = c(2:6),  sort.by = "n") 
-a2 <- a %>% topTable(n = Inf, coef = c(2:6),  sort.by = "n") 
-a3 <- a %>% topTable(n = Inf, coef = c(4:6),  sort.by = "n") %>%
-  mutate(fdr =  p.adjust(P.Value, method = "fdr"))
-
-a3 <- a %>% topTable(n = Inf, coef = c(4:6),  sort.by = "n") %>%
-  filter(adj.P.Val < 0.05)
-
 
 res.venn_padj <- padj_2015 %>% 
   lapply(function(x) x %>% rownames(x))
@@ -168,4 +159,34 @@ plotDat_order %>%
   # geom_text(aes(label = ifelse(is.na(p.value), NA, "*"))) +
   scale_fill_gradient2(low = "blue", mid = "white", high = "red") + 
   theme_bw()
+
+# check padj if possible -----------------------
+get.DAs_v2 <- function(resLimma) {
+  # Aim: extract the DAPs/DAMs with p.value from linnear comparision comparison
+  # following the get.limmaRes result
+  res_DA <- resLimma$p.value %>% as.data.frame %>% 
+    select(matches("reclassify"))
+  
+  return(res_DA)
+}
+
+tstat_longDat_v2 <- tstat_longDat %>% 
+ # filter(season == "2015") %>%
+  mutate(direction = ifelse(tstat < 0, "down", ifelse(tstat > 0, "up", tstat))) %>%
+  group_by(valName) %>% add_count(direction) %>%
+  filter(n == 9)
+a <- unique(tstat_longDat_v2$valName)
+
+
+DAs_v3 <- DAs %>% 
+  lapply(function(x) x %>% 
+           lapply(function(y) y %>% 
+                    rownames_to_column("valName") %>% 
+                    filter(valName %in% a)))
+
+a <- DAs_v3 %>% lapply(function(x) x %>%
+                         lapply(function(y) y %>%
+                                  mutate(padj = p.adjust(reclassifyprotectee, method = "fdr"))))
+b <- a %>% lapply(function(x) x %>%
+                    lapply(function(y) y %>% filter(padj < 0.05))) # CD83 sig. padj at H1N1 and B strain 2015
 

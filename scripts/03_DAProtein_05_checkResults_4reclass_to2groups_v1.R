@@ -60,14 +60,6 @@ v.table <- venn(res.venn$iMED_2015)
 v.table <- venn(res.venn$ZirFlu_2019)
 v.table <- venn(res.venn$ZirFlu_2020)
 
-a <- res.venn$iMED_2015
-names(a) <- c("H1N1_2015", "H3N2_2015", "B_2015")
-a$H1N1_2014 <- res.venn$iMED_2014$H1N1_reclassify
-a$B_2014 <- res.venn$iMED_2014$B_reclassify
-a$H1N1_2019 <- res.venn$ZirFlu_2019$H1N1_reclassify
-a$H1N1_2020 <- res.venn$ZirFlu_2020$H1N1_reclassify
-a$Byamagata_2020 <- res.venn$ZirFlu_2020$Byamagata_reclassify
-v.table <- venn(a)
 # heatmap  ----------------------------------------------------
 DAs_all <- DAs %>% 
   lapply(function(x) x %>% 
@@ -118,3 +110,48 @@ plotDat_order %>%
 
 plotDat_DAPs <- plotDat_order
 save(plotDat_DAPs, file = "plotDat_DAPs.RData")
+
+# check padj if possible -----------------------
+get.DAs_v2 <- function(resLimma) {
+  # Aim: extract the DAPs/DAMs with p.value from linnear comparision comparison
+  # following the get.limmaRes result
+  res_DA <- resLimma$p.value %>% as.data.frame %>% 
+    select(matches("reclassify"))
+  
+  return(res_DA)
+}
+
+DAs_v2 <- resPro_4reclass_2group %>% 
+  lapply(function(x) x %>% lapply(function(y) get.DAs_v2(y)))
+
+DAs_v3 <- DAs_v2 %>% 
+  lapply(function(x) x %>% 
+           lapply(function(y) y %>% 
+                    rownames_to_column("valName") %>% 
+                    filter(valName %in% selected_DAs)))
+
+a <- DAs_v3 %>% lapply(function(x) x %>%
+                         lapply(function(y) y %>%
+                                  mutate(padj = p.adjust(reclassifyprotectee, method = "fdr"))))
+
+b <- a %>% lapply(function(x) x %>%
+                    lapply(function(y) y %>% filter(padj < 0.05))) # CD83 sig. padj at H1N1 and B strain 2015
+
+tstat_longDat_v2 <- tstat_longDat %>% 
+  mutate(direction = ifelse(tstat < 0, "down", ifelse(tstat > 0, "up", tstat))) %>%
+  group_by(valName) %>% add_count(direction) %>%
+  filter(n >6)
+a <- unique(tstat_longDat_v2$valName)
+
+
+DAs_v3 <- DAs_v2 %>% 
+  lapply(function(x) x %>% 
+           lapply(function(y) y %>% 
+                    rownames_to_column("valName") %>% 
+                    filter(valName %in% a)))
+
+a <- DAs_v3 %>% lapply(function(x) x %>%
+                         lapply(function(y) y %>%
+                                  mutate(padj = p.adjust(reclassifyprotectee, method = "fdr"))))
+b <- a %>% lapply(function(x) x %>%
+                    lapply(function(y) y %>% filter(padj < 0.05))) # CD83 sig. padj at H1N1 and B strain 2015
