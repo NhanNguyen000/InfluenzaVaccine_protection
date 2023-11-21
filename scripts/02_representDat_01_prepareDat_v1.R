@@ -23,7 +23,7 @@ season_cohorts <- list()
 for (year in unique(metadata_healthy$season)) {
   season_cohorts[[year]] <- metadata_healthy %>% 
     filter(season == year) %>% 
-    mutate(start = as.numeric(rownames(.)) - 1, end = as.numeric(rownamSes(.)))
+    mutate(start = as.numeric(rownames(.)) - 1, end = as.numeric(rownames(.)))
 }
 metadata_healthy_v2 <- season_cohorts %>% purrr::reduce(rbind)
 
