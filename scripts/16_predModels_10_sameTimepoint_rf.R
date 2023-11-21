@@ -80,7 +80,7 @@ valiSet_2015 %>% lapply(function(x) x%>% count(ab))
 
 ## prepare validation-test, all 4 season --------------------------------
 valiSets <- list()
-for (timpoint in c("d0", "d28")) {
+for (timepoint in c("d0", "d28")) {
   dat_temp <- metadata_healthy %>% left_join(inputDat) %>% 
     filter(time == timepoint)
   
@@ -134,12 +134,6 @@ train_predOut <- trainSet %>% lapply(function(x) x$ab)
 
 validation_inputSets <- valiSets %>% lapply(function(x) x[, inputVars])
 validation_predOuts <- valiSets %>% lapply(function(x) x$ab)
-
-
-validation_inputSets <- valiSets %>% lapply(function(x) x[, inputVars])
-validation_predOuts <- valiSets %>% 
-  lapply(function(x) x[, c("reclassify")] %>% as.vector() %>% unlist() %>% as.factor())
-
 
 # Run models (run in Slum/server) ==========================================
 set.seed(123) #set the seed to make your partition reproducible
