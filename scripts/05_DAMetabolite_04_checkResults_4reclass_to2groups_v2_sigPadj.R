@@ -13,6 +13,7 @@ get.DAs <- function(resLimma) {
   return(res_DA)
 }
 
+
 get.tstat <- function(resLimma) {
   # Aim: extract the t-statistic value from linnear comparision comparison
   # following the get.limmaRes result
@@ -76,7 +77,9 @@ tstat_longDat <- tstat_all %>%
   mutate(group = paste0(season, "_", strain))
 
 # protein/metabolite show consistent trend across strain and season ----------------------------------------------------
-consistVars <- tstat_longDat %>% 
+consistVars <- tstat_longDat %>%
+  filter(group %in% c("2014_H1N1", "2015_H1N1", "2019_H1N1", "2020_H1N1",
+                      "2014_B", "2015_B", "2015_H3N2", "2020_Byamagata")) %>%
   mutate(direction = ifelse(tstat < 0, "down", ifelse(tstat > 0, "up", tstat))) %>%
   group_by(varName) %>% add_count(direction) %>%
   filter(n >6) %>% # The up/down trend appear in 6 out of 8 comparison (75% across strain and season) 
@@ -101,11 +104,13 @@ tstat_longDat_consistVars <- tstat_all %>%
   mutate(group = paste0(season, "_", strain))
 
 ## heatmap --------------------------------
-sigPval_vars <- tstat_longDat %>% 
+sigPval_vars <- tstat_longDat %>%
+  filter(group %in% c("2014_H1N1", "2015_H1N1", "2019_H1N1", "2020_H1N1",
+                      "2014_B", "2015_B", "2015_H3N2", "2020_Byamagata")) %>%
   filter(p.value < 0.05) %>% select(varName) %>% unlist() %>% unique()
 
 selected_vars <- intersect(consistVars, sigPval_vars)
-save(selected_vars, file = "selected_consist_sigPval_DAMs.RData") # 70 formulas
+save(selected_vars, sigPval_vars, file = "selected_consist_sigPval_DAMs.RData") # 30 and 180 formulas
 
 plotDat <- tstat_longDat_consistVars %>% 
   filter(varName %in% selected_vars) %>%
@@ -130,3 +135,26 @@ plotDat_order %>%
 
 plotDat_DAPs <- plotDat_order
 save(plotDat_DAPs, file = "plotDat_DAPs.RData")
+
+## select metabolites  --------------------------------
+a <- tstat_longDat %>% 
+  filter(group %in% c("2014_H1N1", "2015_H1N1", "2019_H1N1", "2020_H1N1",
+                      "2014_B", "2015_B", "2015_H3N2", "2020_Byamagata")) %>%
+  mutate(direction = ifelse(tstat < 0, "down", ifelse(tstat > 0, "up", tstat))) %>%
+  group_by(varName) %>% add_count(direction) %>%
+  filter(n == 8) %>% # The up/down trend appear in 6 out of 8 comparison (75% across strain and season) 
+  select(varName) %>% unlist() %>% unique()
+
+library(openxlsx)
+rawDat_iMED_meboAnnot <- read.xlsx('/vol/projects/CIIM/Influenza/iMED/metabolic/raw_data/tables/DATA_CURATED_reformatted.xlsx',
+                                   sheet = 'annotation') %>% fill(ionIdx, .direction = "down")
+
+k <- rawDat_iMED_meboAnnot %>% filter(Formula %in% selected_vars) # 30 formulas
+k <- rawDat_iMED_meboAnnot %>% filter(Formula %in% sigPval_vars) # 180 formulas
+k2 <- k %>% slice(grep("HMDB", k$CompoundID))
+
+write.table(k2$CompoundID, file = "HMDB_test.txt", quote = FALSE, col.names = FALSE, row.names = FALSE)
+
+
+
+
