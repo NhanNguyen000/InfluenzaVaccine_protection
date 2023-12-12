@@ -130,6 +130,7 @@ plotDat_boxplot %>% count(B_reclassify)
 
 # compare re-classfiy groups
 compare_responder <- list( c("NR", "Other"), c("Other", "TR"), c("NR", "TR") )
+compare_reClass_v2 <- list( c("LL", "LH"), c("LL", "HL"))
 compare_reClass <- list( c("LL", "LH"), c("LL", "HL"), c("LL", "HH"))
 compare_abFC <- list(c("R", "NR"))
 compare_abD0 <- list(c("low", "high"))
@@ -139,7 +140,7 @@ cowplot::plot_grid(
   plotDat_boxplot %>%
     ggboxplot(x = "H1N1_reclassify", y = protein,
               paletter = "jco", add = "jitter") + 
-    stat_compare_means(comparisons = compare_reClass, method = "t.test"),
+    stat_compare_means(comparisons = compare_reClass_v2, method = "t.test"),
   plotDat_boxplot %>%
     ggboxplot(x = "H3N2_reclassify", y = protein,
               paletter = "jco", add = "jitter") + 
@@ -147,7 +148,7 @@ cowplot::plot_grid(
   plotDat_boxplot %>%
     ggboxplot(x = "B_reclassify", y = protein,
               paletter = "jco", add = "jitter") + 
-    stat_compare_means(comparisons = compare_reClass, method = "t.test"),
+    stat_compare_means(comparisons = compare_reClass_v2, method = "t.test"),
   nrow = 1
 )
 
@@ -274,3 +275,13 @@ plot_CD83_CCR7 <- bulkRNAseq_baseline %>%
   theme_classic()
 
 cowplot::plot_grid(plot_CD83_CD40, plot_CD83_CD80, plot_CD83_CCR7, nrow =1)
+
+# correlation heatmap 
+a <- bulkRNAseq_baseline %>% select(c("CD83", CD83_relatedPro))
+cor.mat <- a %>% cor_mat()
+cor.mat %>% cor_get_pval()
+cor.mat %>%
+  cor_reorder() %>%
+  pull_lower_triangle() %>%
+  cor_plot(label = TRUE, insignificant = "blank", 
+           palette = get_palette(c("blue", "white", "red"), 20))

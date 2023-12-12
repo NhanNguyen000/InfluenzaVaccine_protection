@@ -21,7 +21,6 @@ hallmarkSets %>% head() %>% lapply(head)
 
 # load data =======================================================================
 
-
 ## convert protein to Entrez gene ID----------------------------------
 load("cohorts_dat.RData")
 Entrez_IDs <- AnnotationDbi::select(org.Hs.eg.db, 
@@ -81,3 +80,27 @@ gsea_plot %>%
   facet_grid(season ~., scales = "free_y", space = "free") + 
   xlim(c(0, 3)) + theme_bw()
 
+# average t-stat -> pathway analysis ------------------------
+tstat_avg <- resPro_4reclass_2group %>%
+  lapply(function(x) x %>% lapply(function(y) get.tstat(y))) %>% 
+  lapply(function(x) x %>% 
+           lapply(function(y) y %>% rownames_to_column("varName")) %>%
+           bind_rows(.id = "strain")) %>%
+  bind_rows(.id = "season") %>%
+  full_join(Entrez_IDs, by = c("varName" = "SYMBOL")) %>%
+  group_by(ENTREZID) %>% drop_na(ENTREZID) %>%
+  dplyr::summarise(tstat_avg = mean(reclassifyprotectee, na.rm = TRUE))
+
+# fgsea
+rank_avg <- deframe(tstat_avg)
+fgsea_resAbg <- fgsea(pathways=hallmarkSets, 
+                      stats= rank_avg, nPerm = 5000) %>%
+  as_tibble() %>% arrange(desc(NES))
+
+# plot
+ggplot(fgsea_resAbg, aes(reorder(pathway, NES), NES)) +
+  geom_col(aes(fill=padj<0.05)) +
+  coord_flip() +
+  labs(x="Pathway", y="Normalized Enrichment Score",
+       title="Hallmark pathways NES from GSEA") + 
+  theme_minimal()

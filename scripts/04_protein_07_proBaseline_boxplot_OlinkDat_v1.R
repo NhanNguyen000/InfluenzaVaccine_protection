@@ -52,3 +52,56 @@ ggboxplot(metadat_boxplot, x = "H1N1_abBaseline", y = protein,
 ggboxplot(metadat_boxplot, x = "responder", y = protein,
           paletter = "jco", add = "jitter") + facet_wrap(~season, nrow = 1) + 
   stat_compare_means(comparisons = compare_responder, method = "t.test")
+
+# boxplot with other strains -------------------
+protein <- "CD83"
+
+metadat_boxplot <- inputDat %>% 
+  select(season, responder, c(protein), matches("_abFC|_d0|_d28|_reclassify")) %>%
+  pivot_longer(matches("reclassify"), names_to = "strain", values_to = "reclassify") %>%
+  drop_na(reclassify) %>% 
+  mutate(strain = gsub("_reclassify", "", strain),
+         strainSeason = paste0(strain, "_", season)) %>%
+  mutate(abFC = ifelse(reclassify == "LH" | reclassify == "HH", "R", "NR")) %>%
+  mutate(abBaseline = ifelse(reclassify == "LL" | reclassify == "LH", "low", "high"))
+
+# based on reclassification 
+metadat_boxplot %>% filter(strain == "H1N1") %>% # only H1N1
+  ggboxplot(x = "reclassify", y = protein,
+            paletter = "jco", add = "jitter") + 
+  facet_wrap(~strainSeason, nrow = 1) +
+  stat_compare_means(comparisons = compare_reClass, method = "t.test")
+
+metadat_boxplot %>% # no H1N1
+  filter(strainSeason %in% c("B_2014", "B_2015", "H3N2_2015", "Byamagata_2020")) %>%
+  ggboxplot(x = "reclassify", y = protein,
+            paletter = "jco", add = "jitter") + 
+  facet_wrap(~strainSeason, nrow = 1) +
+  stat_compare_means(comparisons = compare_reClass, method = "t.test")
+
+metadat_boxplot %>% 
+  filter(strainSeason %in% 
+           c("H1N1_2014", "H1N1_2015", "H1N1_2019", "H1N1_2020",
+             "B_2014", "B_2015", "H3N2_2015", "Byamagata_2020")) %>%
+  ggboxplot(x = "reclassify", y = protein,
+            paletter = "jco", add = "jitter") + 
+  facet_wrap(~strainSeason, nrow = 2) +
+  stat_compare_means(comparisons = compare_reClass, method = "t.test")
+
+
+# based on abFC: NR vs R
+metadat_boxplot %>% 
+  filter(strain == "H1N1" | strainSeason %in% c("B_2014", "B_2015", "H3N2_2015", "Byamagata_2020")) %>%
+  ggboxplot(x = "abFC", y = protein,
+          paletter = "jco", add = "jitter") + 
+  facet_wrap(~strainSeason, nrow = 1) + 
+  stat_compare_means(comparisons = compare_abFC, method = "t.test")
+
+# based on abT1: low Ab vs high Ab
+metadat_boxplot %>% 
+  filter(strain == "H1N1" | strainSeason %in% c("B_2014", "B_2015", "H3N2_2015", "Byamagata_2020")) %>%
+  ggboxplot(x = "abBaseline", y = protein,
+            paletter = "jco", add = "jitter") + 
+  facet_wrap(~strainSeason, nrow = 1) + 
+  stat_compare_means(comparisons = compare_abD0, method = "t.test")
+
