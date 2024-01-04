@@ -137,14 +137,6 @@ plotDat_DAPs <- plotDat_order
 save(plotDat_DAPs, file = "plotDat_DAPs.RData")
 
 ## select metabolites  --------------------------------
-a <- tstat_longDat %>% 
-  filter(group %in% c("2014_H1N1", "2015_H1N1", "2019_H1N1", "2020_H1N1",
-                      "2014_B", "2015_B", "2015_H3N2", "2020_Byamagata")) %>%
-  mutate(direction = ifelse(tstat < 0, "down", ifelse(tstat > 0, "up", tstat))) %>%
-  group_by(varName) %>% add_count(direction) %>%
-  filter(n == 8) %>% # The up/down trend appear in 6 out of 8 comparison (75% across strain and season) 
-  select(varName) %>% unlist() %>% unique()
-
 library(openxlsx)
 rawDat_iMED_meboAnnot <- read.xlsx('/vol/projects/CIIM/Influenza/iMED/metabolic/raw_data/tables/DATA_CURATED_reformatted.xlsx',
                                    sheet = 'annotation') %>% fill(ionIdx, .direction = "down")
