@@ -87,17 +87,6 @@ v.table <- venn(res.venn$iMED_2015$H3N2_reclassify)
 v.table <- venn(res.venn$ZirFlu_2019$Bvictoria_reclassify)
 v.table <- venn(res.venn$ZirFlu_2020$Byamagata_reclassify)
 
-# check Padj significant ----------------------------------------
-padj_2015 <- resMebo_4reclass$iMED_2015 %>% 
-  lapply(function(x) x %>% 
-           eBayes %>% topTable(n = Inf, sort.by = "n") %>% 
-           filter(adj.P.Val < 0.05)) 
-
-res.venn_padj_2015 <- padj_2015 %>% 
-  lapply(function(x) x %>% rownames(x))
-
-v.table <- venn(res.venn_padj_2015)
-
 # # the strain in seasons have p-adj significant (<0.05)
 resMebo_padj <- list()
 resMebo_padj[["2014_H1N1"]] <- resMebo_4reclass$iMED_2014$H1N1_reclassify
