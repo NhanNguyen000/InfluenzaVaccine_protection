@@ -30,7 +30,7 @@ load("/vol/projects/CIIM/Influenza/ZirrFlu/InfluenzaCohorts_NhanNguyen/cohorts_d
 metadata_healthy <- cohorts$HAI_all %>% 
   full_join(cohorts$donorInfo_all %>% 
               select(probandID, season, cohort, sex, age, condition)) %>%
-  left_join(cohorts$donorSample_all %>% filter(time == "T1")) %>%
+  left_join(cohorts$donorSample_all %>% filter(time == "d0")) %>%
   filter(condition == "Healthy") %>%
   mutate_at(vars(contains("reclassify")), ~convert_protectees(.x)) %>%
   mutate_at(vars(contains("reclassify")), ~factor(.x, levels = c("LL", "protectee"))) %>%
@@ -65,46 +65,82 @@ dat_temp %>% count(season, B_reclassify) # LL group size >= 3 in all 2 seasons 2
 dat_temp %>% count(season, Bvictoria_reclassify) # LL group size < 3 in all 2 seasons 2019 and 2020 --> can not use 
 dat_temp %>% count(season, Byamagata_reclassify) # LL group size >= 3 in seasons 2020 --> can use season 2020
 
-
-# Train elastic model --------------------------------
-set.seed(123) #set the seed to make your partition reproducible
-
 ## prepare train-test --------------------------------
 trainSet <- dat_temp %>% filter(season == "2015") %>% 
-  rename("reclassify" = "H1N1_reclassify", "ab_T1" = "H1N1_T1")
+  rename("reclassify" = "H1N1_reclassify", "ab_d0" = "H1N1_d0")
 trainSet %>% count(reclassify)
+
+
+## prepare validation-test --------------------------------
+valiSets <- list()
+# for H1N1
+for (year in c("2014", "2019", "2020")) {
+  valiSets[[paste0("H1N1_", year)]] <- dat_temp %>% 
+    filter(season == year) %>% 
+    rename("reclassify" = "H1N1_reclassify", "ab_d0" = "H1N1_d0")
+}
+
+# for H3N2
+valiSets$H3N2_2015 <- dat_temp %>% 
+  filter(season == "2015") %>% 
+  rename("reclassify" = "H3N2_reclassify", "ab_d0" = "H3N2_d0")
+
+# for B
+for (year in c("2014", "2015")) {
+  valiSets[[paste0("B_", year)]] <- dat_temp %>% 
+    filter(season == year) %>% 
+    rename("reclassify" = "B_reclassify", "ab_d0" = "B_d0")
+}
+
+# for Byamagata
+valiSets$Byamagata<- dat_temp %>% 
+  filter(season == "2020") %>% 
+  rename("reclassify" = "Byamagata_reclassify", "ab_d0" = "Byamagata_d0")
+
+
+valiSets %>% lapply(function(x) x%>% count(reclassify))
 
 ## input variable --------------------------------
 proNames <- colnames(proteinDat_impute$iMED_2014)
 meboNames <- colnames(mebo_Dat$ZirFlu_2019)
 
-inputVariables <- c("age", "sex", "ab_T1", proNames, meboNames)
+inputVars <- c("age", "sex", "ab_d0", proNames, meboNames)
 
 # prepare input and validation sets
-train_inputSet <- trainSet[, inputVariables]
+train_inputSet <- trainSet[, inputVars]
 train_predOut <- trainSet[, c("reclassify")] %>% as.vector() %>% unlist()
 
-# train the model -------------------------------------
-netFit_models_allDatTrain <- list()
-for (i in c(1:10)) {
-  netFit_models_allDatTrain[[i]] <- train(x = train_inputSet,
-                                          y = train_predOut,
-                                          method = "glmnet", 
-                                          #metric = 'Accuracy', # for classification
-                                          metric = "Kappa", # similar to classification accuracy but it is useful to normalize the imbalance in classes
-                                          #metric = "ROC",
-                                          tuneGrid=expand.grid(.alpha = seq(0.1,0.9, by=0.1),
-                                                               .lambda = seq(0,1,by=0.1)),
-                                          trControl = trainControl(method="repeatedcv",
-                                                                   number=5,
-                                                                   repeats=20,
-                                                                   summaryFunction=twoClassSummary, 
-                                                                   classProbs=T,
-                                                                   savePredictions = T),
-  )
+validation_inputSets <- valiSets %>% lapply(function(x) x[, inputVars])
+validation_predOuts <- valiSets %>% 
+  lapply(function(x) x[, c("reclassify")] %>% as.vector() %>% unlist() %>% as.factor())
+
+
+# Run models (run in Slum/server) ==========================================
+set.seed(123) #set the seed to make your partition reproducible
+
+#selected_metric = 'Accuracy' # for classification
+selected_metric =  "Kappa" # similar to classification accuracy but it is useful to normalize the imbalance in classes
+selected_crossVal <- trainControl(method="repeatedcv", number = 5, 
+                                  repeats = 10)
+
+selected_method <- "glmnet"
+nreps <- 10
+netFits <- list()
+netFit_pred <- list()
+for (i in 1:nreps) {
+  netFits[[i]] <- train(x = train_inputSet, y = train_predOut,
+                        method = selected_method, metric = selected_metric,
+                        tuneGrid=expand.grid(.alpha = seq(0.1,0.9, by=0.1),
+                                             .lambda = seq(0,1,by=0.1)),
+                        trControl = selected_crossVal)
+  
+  for (valiSet in names(validation_inputSets)) {
+    val.pred_temp <- predict(netFits[[i]], newdata = validation_inputSets[[valiSet]], type = 'raw')
+    netFit_pred[[valiSet]][[i]] <- confusionMatrix(val.pred_temp, validation_predOuts[[valiSet]]) # Training accuracy
+  }
+  
+  print(paste0("Run ", i, " time."))
 }
 
-save(netFit_models_allDatTrain, 
-     file = "netFit_models_allDatTrain.RData")
-
-
+# save the result -----------------------
+save(netFits, netFit_pred, file = "res.predModel_glmnet.RData")

@@ -144,6 +144,7 @@ tstat_longDat <- tstat_all %>% full_join(DAs_all)
 
 # selected DAs for the heat map
 selected_DAs <- unique(as.vector(unlist(res.venn)[which(duplicated(unlist(res.venn)))])) # DAs in at least twice across strains
+selected_DAs <- unique((DAs_all %>% filter(p.value < 0.5))$valName)
 
 selected_DAs_info <- selected_models %>% 
   filter(OMICSPRED.ID %in% selected_DAs) %>% # Note: some row have Ensemble ID but no gene name
@@ -165,6 +166,15 @@ selected_DAs_info <- selected_models %>%
 
 selected_DAs_info %>% count(type, model)  # have checked, no gene/ proteins overlap with DAPs
 
+
+write.table(unique(selected_DAs_info$Gene), file = "processedDat/omicsPred/sig_1393genes.txt", 
+            row.names = FALSE, col.names = FALSE,
+            quote = FALSE)
+
+write.table(unique(selected_DAs_info$Gene), file = "processedDat/omicsPred/sig_98genes.txt", 
+            row.names = FALSE, col.names = FALSE,
+            quote = FALSE)
+
 ## selectDA elements with consistent trend across 3 strain --------------------
 selected_DAs_v2 <- tstat_longDat %>% filter(valName %in% selected_DAs) %>%
   mutate(direction = ifelse(tstat >0, 1, -1)) %>%
@@ -175,6 +185,9 @@ selected_DAs_v2 <- tstat_longDat %>% filter(valName %in% selected_DAs) %>%
 selected_DAs_info %>% filter(OMICSPRED.ID %in% selected_DAs_v2) %>% count(type, model)
 selected_DAs_info_v2 <- selected_DAs_info %>% filter(OMICSPRED.ID %in% selected_DAs_v2)
 
+write.table(unique(selected_DAs_info_v2$Gene), file = "processedDat/omicsPred/sig_59genes.txt", 
+            row.names = FALSE, col.names = FALSE,
+            quote = FALSE)
 ## selectDA elements (protein, RNAseq) show positive correlation with measured values --------------------
 load("pred_with_proRna_measures.RData")
 predMeasure_positivCor <- pred_inf %>% filter(cor > 0)
@@ -192,7 +205,7 @@ plotDat <- tstat_longDat %>%
             by = c("valName" = "OMICSPRED.ID")) %>%
   mutate(Name_all = ifelse(Name_all != "ICAM5", Name_all, # The ICAM5 proteins in Somalogic has 2 prediction models
                            paste(Name_all, "_", valName))) %>% 
-  dplyr::select(-valName) %>% rename("valName" = "Name_all") %>% as.data.frame()
+  dplyr::select(-valName) %>% rename("Name_all" = "valName") %>% as.data.frame()
 
 plotDat_order <- get.plotDat_clusterRow(plotDat, 
                                         colName = "strain", 

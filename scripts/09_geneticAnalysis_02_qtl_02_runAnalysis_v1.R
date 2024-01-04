@@ -1,4 +1,7 @@
-# run qtl analysis based on Martijn code
+# run qtl analysis based on Martijn code, 
+# but after Maritjn talk with Javi for the genetic imputation, he re-run the code with Javi pipeline
+# no the correct QTL result is in /vol/projects/CIIM/Influenza/ZirrFlu/genetics_abqtl/out/mapping/, and only for T4
+
 rm(list = ls())
 
 library(dplyr)

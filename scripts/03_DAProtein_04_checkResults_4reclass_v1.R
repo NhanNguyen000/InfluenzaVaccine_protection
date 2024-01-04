@@ -69,17 +69,6 @@ v.table <- venn(res.venn$iMED_2015$H3N2_reclassify)
 v.table <- venn(res.venn$ZirFlu_2019$Bvictoria_reclassify)
 v.table <- venn(res.venn$ZirFlu_2020$Byamagata_reclassify)
 
-# check Padj significant ----------------------------------------
-padj_2015 <- resPro_4reclass$iMED_2015 %>% 
-  lapply(function(x) x %>% 
-           eBayes %>% topTable(n = Inf, sort.by = "n") %>% 
-           filter(adj.P.Val < 0.05)) # no p-adj significant (<0.05) in other seasons
-
-res.venn_padj <- padj_2015 %>% 
-  lapply(function(x) x %>% rownames(x))
-
-v.table <- venn(res.venn_padj)
-
 # heatmap  ----------------------------------------------------
 DAs_all <- DAs %>% 
   lapply(function(x) 
