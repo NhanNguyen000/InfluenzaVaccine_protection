@@ -80,6 +80,7 @@ protein <- "CXCL8"
 protein <- "OSM"
 protein <- "IL6"
 protein <- "SIGLEC1"
+protein <- "PTX3"
 
 
 dat_temp <- cbind("predicted" = pred_proDat[, protein],
@@ -162,6 +163,8 @@ gene <- "CRYL1"
 gene <- "FCRL3"
 gene <- "TNFSF12"
 
+gene <- "CD5"
+gene <- "PTX3"
 dat_temp <- cbind("predicted" = pred_rnaDat[, gene],
                   "measured" = measured_rnaDat[, gene])
 

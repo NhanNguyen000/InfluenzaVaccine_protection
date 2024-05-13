@@ -145,6 +145,7 @@ tstat_longDat <- tstat_all %>% full_join(DAs_all)
 # selected DAs for the heat map
 selected_DAs <- unique(as.vector(unlist(res.venn)[which(duplicated(unlist(res.venn)))])) # DAs in at least twice across strains
 selected_DAs <- unique((DAs_all %>% filter(p.value < 0.5))$valName)
+selected_DAs <- unique((DAs_all %>% filter(strain == "H3N2", p.value < 0.5))$valName)
 
 selected_DAs_info <- selected_models %>% 
   filter(OMICSPRED.ID %in% selected_DAs) %>% # Note: some row have Ensemble ID but no gene name

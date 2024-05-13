@@ -1,0 +1,130 @@
+  season H1N1_reclassify   n
+1   2014              LL   3
+2   2014       protectee  31
+3   2015              LL  32
+4   2015       protectee 168
+5   2019              LL   8
+6   2019       protectee  25
+7   2020              LL   8
+8   2020       protectee  26
+  season H3N2_reclassify   n
+1   2014       protectee  34
+2   2015              LL   5
+3   2015       protectee 195
+4   2019       protectee  33
+5   2020       protectee  34
+  season B_reclassify   n
+1   2014           LL   8
+2   2014    protectee  26
+3   2015           LL  39
+4   2015    protectee 161
+5   2019         <NA>  33
+6   2020         <NA>  34
+  season Bvictoria_reclassify   n
+1   2014                 <NA>  34
+2   2015                 <NA> 200
+3   2019            protectee  33
+4   2020                   LL   1
+5   2020            protectee  33
+  season Byamagata_reclassify   n
+1   2014                 <NA>  34
+2   2015                 <NA> 200
+3   2019            protectee  33
+4   2020                   LL   3
+5   2020            protectee  31
+  reclassify   n
+1         LL  32
+2  protectee 168
+$H1N1_2014
+  reclassify  n
+1         LL  3
+2  protectee 31
+
+$H1N1_2019
+  reclassify  n
+1         LL  8
+2  protectee 25
+
+$H1N1_2020
+  reclassify  n
+1         LL  8
+2  protectee 26
+
+$H3N2_2015
+  reclassify   n
+1         LL   5
+2  protectee 195
+
+$B_2014
+  reclassify  n
+1         LL  8
+2  protectee 26
+
+$B_2015
+  reclassify   n
+1         LL  39
+2  protectee 161
+
+$Byamagata
+  reclassify  n
+1         LL  3
+2  protectee 31
+
+[1]	train-logloss:0.304376 
+[2]	train-logloss:0.209514 
+[1] "Run 1 time."
+[1]	train-logloss:0.304376 
+[2]	train-logloss:0.209514 
+[1] "Run 2 time."
+[1]	train-logloss:0.304376 
+[2]	train-logloss:0.209514 
+[1] "Run 3 time."
+[1]	train-logloss:0.304376 
+[2]	train-logloss:0.209514 
+[1] "Run 4 time."
+[1]	train-logloss:0.304376 
+[2]	train-logloss:0.209514 
+[1] "Run 5 time."
+[1]	train-logloss:0.304376 
+[2]	train-logloss:0.209514 
+[1] "Run 6 time."
+[1]	train-logloss:0.304376 
+[2]	train-logloss:0.209514 
+[1] "Run 7 time."
+[1]	train-logloss:0.304376 
+[2]	train-logloss:0.209514 
+[1] "Run 8 time."
+[1]	train-logloss:0.304376 
+[2]	train-logloss:0.209514 
+[1] "Run 9 time."
+[1]	train-logloss:0.304376 
+[2]	train-logloss:0.209514 
+[1] "Run 10 time."
+bioinf022
+########################################
+#            Job Accounting            #
+########################################
+Name                : predModel_xgboost
+User                : nnguyen
+Account             : biim_gst
+Partition           : cpu
+QOS                 : normal
+NNodes              : 1
+Nodes               : bioinf022
+Cores               : 2
+GPUs                : 0
+State               : COMPLETED
+ExitCode            : 0:0
+Submit              : 2023-10-24T12:10:10
+Start               : 2023-10-24T12:10:14
+End                 : 2023-10-24T12:10:56
+Waited              :   00:00:04
+Reserved walltime   : 1-06:00:00
+Used walltime       :   00:00:42
+Used CPU time       :   00:00:08 (Efficiency: 10.47%)
+% User (Computation): 89.67%
+% System (I/O)      : 10.32%
+Mem reserved        : 16G
+Max Mem used        : 225.48M (bioinf022)
+Max Disk Write      : 0.00  (bioinf022)
+Max Disk Read       : 10.24K (bioinf022)

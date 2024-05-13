@@ -1,0 +1,132 @@
+$iMED_2014
+named integer(0)
+
+$iMED_2015
+named integer(0)
+
+$ZirFlu_2019
+        CCL11          CCN2         CD79B         CKAP4 CKMT1A_CKMT1B 
+           25            39            53            60            61 
+         CTRC         FABP1           FST           HGF         IL12B 
+           80           114           126           137           150 
+        PCDH1         PRDX5     TNFRSF11A        TRIM21 
+          230           242           288           302 
+
+$ZirFlu_2020
+        CCL11          CCN2         CD79B         CKAP4 CKMT1A_CKMT1B 
+           25            39            53            60            61 
+         CTRC         FABP1           FST           HGF         IL12B 
+           80           114           126           137           150 
+        PCDH1         PRDX5     TNFRSF11A        TRIM21 
+          230           242           288           302 
+
+  season H1N1_reclassify   n
+1   2014              LL   3
+2   2014       protectee  31
+3   2015              LL  32
+4   2015       protectee 168
+5   2019              LL   8
+6   2019       protectee  25
+7   2020              LL   8
+8   2020       protectee  26
+  season H3N2_reclassify   n
+1   2014       protectee  34
+2   2015              LL   5
+3   2015       protectee 195
+4   2019       protectee  33
+5   2020       protectee  34
+  season B_reclassify   n
+1   2014           LL   8
+2   2014    protectee  26
+3   2015           LL  39
+4   2015    protectee 161
+5   2019         <NA>  33
+6   2020         <NA>  34
+  season Bvictoria_reclassify   n
+1   2014                 <NA>  34
+2   2015                 <NA> 200
+3   2019            protectee  33
+4   2020                   LL   1
+5   2020            protectee  33
+  season Byamagata_reclassify   n
+1   2014                 <NA>  34
+2   2015                 <NA> 200
+3   2019            protectee  33
+4   2020                   LL   3
+5   2020            protectee  31
+  reclassify   n
+1         LL  32
+2  protectee 168
+$H1N1_2014
+  reclassify  n
+1         LL  3
+2  protectee 31
+
+$H1N1_2019
+  reclassify  n
+1         LL  8
+2  protectee 25
+
+$H1N1_2020
+  reclassify  n
+1         LL  8
+2  protectee 26
+
+$H3N2_2015
+  reclassify   n
+1         LL   5
+2  protectee 195
+
+$B_2014
+  reclassify  n
+1         LL  8
+2  protectee 26
+
+$B_2015
+  reclassify   n
+1         LL  39
+2  protectee 161
+
+$Byamagata
+  reclassify  n
+1         LL  3
+2  protectee 31
+
+[1] "Run 1 time."
+[1] "Run 2 time."
+[1] "Run 3 time."
+[1] "Run 4 time."
+[1] "Run 5 time."
+[1] "Run 6 time."
+[1] "Run 7 time."
+[1] "Run 8 time."
+[1] "Run 9 time."
+[1] "Run 10 time."
+bioinf006
+########################################
+#            Job Accounting            #
+########################################
+Name                : predModel_knn
+User                : nnguyen
+Account             : biim_gst
+Partition           : cpu
+QOS                 : normal
+NNodes              : 1
+Nodes               : bioinf006
+Cores               : 2
+GPUs                : 0
+State               : COMPLETED
+ExitCode            : 0:0
+Submit              : 2023-10-24T11:00:11
+Start               : 2023-10-24T11:00:12
+End                 : 2023-10-24T11:11:28
+Waited              :   00:00:01
+Reserved walltime   : 1-06:00:00
+Used walltime       :   00:11:16
+Used CPU time       :   00:11:05 (Efficiency: 49.20%)
+% User (Computation): 99.67%
+% System (I/O)      :  0.33%
+Mem reserved        : 16G
+Max Mem used        : 443.31M (bioinf006)
+Max Disk Write      : 0.00  (bioinf006)
+Max Disk Read       : 10.24K (bioinf006)

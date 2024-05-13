@@ -1,0 +1,157 @@
+$iMED_2014
+named integer(0)
+
+$iMED_2015
+named integer(0)
+
+$ZirFlu_2019
+        CCL11          CCN2         CD79B         CKAP4 CKMT1A_CKMT1B 
+           25            39            53            60            61 
+         CTRC         FABP1           FST           HGF         IL12B 
+           80           114           126           137           150 
+        PCDH1         PRDX5     TNFRSF11A        TRIM21 
+          230           242           288           302 
+
+$ZirFlu_2020
+        CCL11          CCN2         CD79B         CKAP4 CKMT1A_CKMT1B 
+           25            39            53            60            61 
+         CTRC         FABP1           FST           HGF         IL12B 
+           80           114           126           137           150 
+        PCDH1         PRDX5     TNFRSF11A        TRIM21 
+          230           242           288           302 
+
+  season H1N1_reclassify   n
+1   2014              LL   3
+2   2014       protectee  31
+3   2015              LL  32
+4   2015       protectee 168
+5   2019              LL   8
+6   2019       protectee  25
+7   2020              LL   8
+8   2020       protectee  26
+  season H3N2_reclassify   n
+1   2014       protectee  34
+2   2015              LL   5
+3   2015       protectee 195
+4   2019       protectee  33
+5   2020       protectee  34
+  season B_reclassify   n
+1   2014           LL   8
+2   2014    protectee  26
+3   2015           LL  39
+4   2015    protectee 161
+5   2019         <NA>  33
+6   2020         <NA>  34
+  season Bvictoria_reclassify   n
+1   2014                 <NA>  34
+2   2015                 <NA> 200
+3   2019            protectee  33
+4   2020                   LL   1
+5   2020            protectee  33
+  season Byamagata_reclassify   n
+1   2014                 <NA>  34
+2   2015                 <NA> 200
+3   2019            protectee  33
+4   2020                   LL   3
+5   2020            protectee  31
+  reclassify   n
+1         LL  32
+2  protectee 168
+$H1N1_2014
+  reclassify  n
+1         LL  3
+2  protectee 31
+
+$H1N1_2015
+  reclassify   n
+1         LL  32
+2  protectee 168
+
+$H1N1_2019
+  reclassify  n
+1         LL  8
+2  protectee 25
+
+$H1N1_2020
+  reclassify  n
+1         LL  8
+2  protectee 26
+
+$H3N2_2015
+  reclassify   n
+1         LL   5
+2  protectee 195
+
+$B_2014
+  reclassify  n
+1         LL  8
+2  protectee 26
+
+$B_2015
+  reclassify   n
+1         LL  39
+2  protectee 161
+
+$Byamagata
+  reclassify  n
+1         LL  3
+2  protectee 31
+
+note: only 28 unique complexity parameters in default grid. Truncating the grid to 28 .
+
+[1] "Run 1 time."
+note: only 28 unique complexity parameters in default grid. Truncating the grid to 28 .
+
+[1] "Run 2 time."
+note: only 28 unique complexity parameters in default grid. Truncating the grid to 28 .
+
+[1] "Run 3 time."
+note: only 28 unique complexity parameters in default grid. Truncating the grid to 28 .
+
+[1] "Run 4 time."
+note: only 28 unique complexity parameters in default grid. Truncating the grid to 28 .
+
+[1] "Run 5 time."
+note: only 28 unique complexity parameters in default grid. Truncating the grid to 28 .
+
+[1] "Run 6 time."
+note: only 28 unique complexity parameters in default grid. Truncating the grid to 28 .
+
+[1] "Run 7 time."
+note: only 28 unique complexity parameters in default grid. Truncating the grid to 28 .
+
+[1] "Run 8 time."
+note: only 28 unique complexity parameters in default grid. Truncating the grid to 28 .
+
+[1] "Run 9 time."
+note: only 28 unique complexity parameters in default grid. Truncating the grid to 28 .
+
+[1] "Run 10 time."
+bioinf021
+########################################
+#            Job Accounting            #
+########################################
+Name                : predModels
+User                : nnguyen
+Account             : biim_gst
+Partition           : cpu
+QOS                 : normal
+NNodes              : 1
+Nodes               : bioinf021
+Cores               : 2
+GPUs                : 0
+State               : COMPLETED
+ExitCode            : 0:0
+Submit              : 2023-10-25T11:08:40
+Start               : 2023-10-25T11:08:40
+End                 : 2023-10-25T19:54:25
+Waited              :   00:00:00
+Reserved walltime   : 1-06:00:00
+Used walltime       :   08:45:45
+Used CPU time       :   08:42:55 (Efficiency: 49.73%)
+% User (Computation): 99.95%
+% System (I/O)      :  0.06%
+Mem reserved        : 16G
+Max Mem used        : 445.13M (bioinf021)
+Max Disk Write      : 0.00  (bioinf021)
+Max Disk Read       : 10.24K (bioinf021)

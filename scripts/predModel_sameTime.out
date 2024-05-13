@@ -1,0 +1,306 @@
+$iMED_2014
+named integer(0)
+
+$iMED_2015
+named integer(0)
+
+$ZirFlu_2019
+        CCL11          CCN2         CD79B         CKAP4 CKMT1A_CKMT1B 
+           25            39            53            60            61 
+         CTRC         FABP1           FST           HGF         IL12B 
+           80           114           126           137           150 
+        PCDH1         PRDX5     TNFRSF11A        TRIM21 
+          230           242           288           302 
+
+$ZirFlu_2020
+        CCL11          CCN2         CD79B         CKAP4 CKMT1A_CKMT1B 
+           25            39            53            60            61 
+         CTRC         FABP1           FST           HGF         IL12B 
+           80           114           126           137           150 
+        PCDH1         PRDX5     TNFRSF11A        TRIM21 
+          230           242           288           302 
+
+$H1N1
+  ab   n
+1  L 107
+2  H  93
+
+$H3N2
+  ab   n
+1  L  95
+2  H 105
+
+$B
+  ab   n
+1  L 134
+2  H  66
+
+$H1N1
+  ab   n
+1  L  34
+2  H 166
+
+$H3N2
+  ab   n
+1  L   5
+2  H 195
+
+$B
+  ab   n
+1  L  37
+2  H 163
+
+$H1N1_2014_d0
+  ab  n
+1  L 16
+2  H 18
+
+$H1N1_2015_d0
+  ab   n
+1  L 107
+2  H  93
+
+$H1N1_2019_d0
+  ab  n
+1  L 13
+2  H 20
+
+$H1N1_2020_d0
+  ab  n
+1  L 23
+2  H 11
+
+$H3N2_2014_d0
+  ab  n
+1  L  6
+2  H 28
+
+$H3N2_2015_d0
+  ab   n
+1  L  95
+2  H 105
+
+$H3N2_2019_d0
+  ab  n
+1  L  4
+2  H 29
+
+$H3N2_2020_d0
+  ab  n
+1  L  5
+2  H 29
+
+$B_2014_d0
+  ab  n
+1  L 10
+2  H 24
+
+$B_2015_d0
+  ab   n
+1  L 134
+2  H  66
+
+$Bvictoria_2019_d0
+  ab  n
+1  L  5
+2  H 28
+
+$Bvictoria_2020_d0
+  ab  n
+1  L  8
+2  H 26
+
+$Byamagata_2019_d0
+  ab  n
+1  L  1
+2  H 32
+
+$Byamagata_2020_d0
+  ab  n
+1  L  9
+2  H 25
+
+$H1N1_2014_d28
+  ab  n
+1  L  3
+2  H 26
+
+$H1N1_2015_d28
+  ab   n
+1  L  34
+2  H 166
+
+$H1N1_2019_d28
+  ab  n
+1  L  5
+2  H 26
+
+$H1N1_2020_d28
+  ab  n
+1  L  6
+2  H 25
+
+$H3N2_2014_d28
+  ab  n
+1  H 29
+
+$H3N2_2015_d28
+  ab   n
+1  L   5
+2  H 195
+
+$H3N2_2019_d28
+  ab  n
+1  H 31
+
+$H3N2_2020_d28
+  ab  n
+1  H 31
+
+$B_2014_d28
+  ab  n
+1  L  2
+2  H 27
+
+$B_2015_d28
+  ab   n
+1  L  37
+2  H 163
+
+$Bvictoria_2019_d28
+  ab  n
+1  H 31
+
+$Bvictoria_2020_d28
+  ab  n
+1  H 31
+
+$Byamagata_2019_d28
+  ab  n
+1  H 31
+
+$Byamagata_2020_d28
+  ab  n
+1  H 31
+
+[1] "Strain H1N1 2015"
+note: only 28 unique complexity parameters in default grid. Truncating the grid to 28 .
+
+[1] "Run 1 time."
+note: only 28 unique complexity parameters in default grid. Truncating the grid to 28 .
+
+[1] "Run 2 time."
+note: only 28 unique complexity parameters in default grid. Truncating the grid to 28 .
+
+[1] "Run 3 time."
+note: only 28 unique complexity parameters in default grid. Truncating the grid to 28 .
+
+[1] "Run 4 time."
+note: only 28 unique complexity parameters in default grid. Truncating the grid to 28 .
+
+[1] "Run 5 time."
+note: only 28 unique complexity parameters in default grid. Truncating the grid to 28 .
+
+[1] "Run 6 time."
+note: only 28 unique complexity parameters in default grid. Truncating the grid to 28 .
+
+[1] "Run 7 time."
+note: only 28 unique complexity parameters in default grid. Truncating the grid to 28 .
+
+[1] "Run 8 time."
+note: only 28 unique complexity parameters in default grid. Truncating the grid to 28 .
+
+[1] "Run 9 time."
+note: only 28 unique complexity parameters in default grid. Truncating the grid to 28 .
+
+[1] "Run 10 time."
+[1] "Strain H3N2 2015"
+note: only 28 unique complexity parameters in default grid. Truncating the grid to 28 .
+
+[1] "Run 1 time."
+note: only 28 unique complexity parameters in default grid. Truncating the grid to 28 .
+
+[1] "Run 2 time."
+note: only 28 unique complexity parameters in default grid. Truncating the grid to 28 .
+
+[1] "Run 3 time."
+note: only 28 unique complexity parameters in default grid. Truncating the grid to 28 .
+
+[1] "Run 4 time."
+note: only 28 unique complexity parameters in default grid. Truncating the grid to 28 .
+
+[1] "Run 5 time."
+note: only 28 unique complexity parameters in default grid. Truncating the grid to 28 .
+
+[1] "Run 6 time."
+note: only 28 unique complexity parameters in default grid. Truncating the grid to 28 .
+
+[1] "Run 7 time."
+note: only 28 unique complexity parameters in default grid. Truncating the grid to 28 .
+
+[1] "Run 8 time."
+note: only 28 unique complexity parameters in default grid. Truncating the grid to 28 .
+
+[1] "Run 9 time."
+note: only 28 unique complexity parameters in default grid. Truncating the grid to 28 .
+
+[1] "Run 10 time."
+[1] "Strain B 2015"
+note: only 28 unique complexity parameters in default grid. Truncating the grid to 28 .
+
+[1] "Run 1 time."
+note: only 28 unique complexity parameters in default grid. Truncating the grid to 28 .
+
+[1] "Run 2 time."
+note: only 28 unique complexity parameters in default grid. Truncating the grid to 28 .
+
+[1] "Run 3 time."
+note: only 28 unique complexity parameters in default grid. Truncating the grid to 28 .
+
+[1] "Run 4 time."
+note: only 28 unique complexity parameters in default grid. Truncating the grid to 28 .
+
+[1] "Run 5 time."
+note: only 28 unique complexity parameters in default grid. Truncating the grid to 28 .
+
+[1] "Run 6 time."
+note: only 28 unique complexity parameters in default grid. Truncating the grid to 28 .
+
+[1] "Run 7 time."
+note: only 28 unique complexity parameters in default grid. Truncating the grid to 28 .
+
+[1] "Run 8 time."
+note: only 28 unique complexity parameters in default grid. Truncating the grid to 28 .
+
+[1] "Run 9 time."
+note: only 28 unique complexity parameters in default grid. Truncating the grid to 28 .
+
+[1] "Run 10 time."
+bioinf031
+########################################
+#            Job Accounting            #
+########################################
+Name                : predModel_sameTime
+User                : nnguyen
+Account             : biim_gst
+Partition           : cpu
+QOS                 : normal
+NNodes              : 1
+Nodes               : bioinf031
+Cores               : 2
+GPUs                : 0
+State               : COMPLETED
+ExitCode            : 0:0
+Submit              : 2024-01-03T14:57:39
+Start               : 2024-01-03T14:57:40
+End                 : 2024-01-04T08:36:40
+Waited              :   00:00:01
+Reserved walltime   : 1-06:00:00
+Used walltime       :   17:39:00
+Used CPU time       :   17:36:01 (Efficiency: 49.86%)
+% User (Computation): 100.00%
+% System (I/O)      :  0.00%
+Mem reserved        : 16G
+Max Mem used        : 509.30M (bioinf031)
+Max Disk Write      : 10.24K (bioinf031)
+Max Disk Read       : 41.54M (bioinf031)
