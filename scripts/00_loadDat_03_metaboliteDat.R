@@ -81,4 +81,4 @@ rownames(ZirFlu_mebo) <- paste0("0", rownames(ZirFlu_mebo))
 
 # save data ----------------------------------------------------
 save(iMED_mebo, iMED_meboAnnot, ZirFlu_mebo, ZirFlu_meboAnnot, 
-     file = "metaboliteDat.RData")
+     file = "processedDat/metaboliteDat.RData")

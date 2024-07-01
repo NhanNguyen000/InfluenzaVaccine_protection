@@ -89,6 +89,7 @@ ZirFlu$HAI_2020 <- HAItiter_2020 %>% slice(-1) %>% fill(condition) %>%
   mutate_at(c(3:18), as.numeric)
 
 rm(HAIabFC_2020, HAItiter_2020)
+
 ## MN antibody titers ---------------------------------------------------------
 ### season 2019 --------------------------
 MNtiter_2019 <- read_excel("/vol/projects/CIIM/Influenza/ZirrFlu/metadata/20230105_ZirFlu-2019-2020_MN_Titer_Valerie&Nhan.xlsx",
@@ -119,8 +120,9 @@ ZirFlu$MN_2019 <- MNtiter_2019 %>% full_join(MNabFC_2019) %>%
   mutate(season = "2019", condition = str_to_lower(condition)) %>%
   relocate(season)
 rm(MNabFC_2019, MNtiter_2019)
+
 # save data ================================================================================
-save(iMED, ZirFlu, file = "metaDat_antibody.RData")
+save(iMED, ZirFlu, file = "processedDat/metaDat_antibody.RData")
 
 
 
