@@ -3,7 +3,7 @@ library(tidyverse)
 library(ggpubr)
 library(webr)
 
-load("cohorts_dat.RData")
+load("processedDat/cohorts_dat.RData")
 
 # metadata for all healthy subjects -------------------------
 metadata_healthy <- cohorts$HAI_all %>% 

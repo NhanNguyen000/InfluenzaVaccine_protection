@@ -4,7 +4,7 @@ library(ggpubr)
 library(webr)
 library(patchwork)
 
-load("cohorts_dat.RData")
+load("processedDat/cohorts_dat.RData")
 
 # metadata for all healthy subjects -------------------------
 metadata_healthy <- cohorts$HAI_all %>% 
@@ -23,12 +23,18 @@ metadata_4groups <- metadata_healthy %>%
   mutate(strain = gsub("_reclassify", "", strain),
          strain = factor(strain, levels = c("Bvictoria", "Byamagata", "B", "H3N2", "H1N1")))
 
-metadata_4groups %>%
+plot_reClassGroups <- metadata_4groups %>%
   ggplot(aes(y = strain, fill = reclassify)) +
   geom_bar() + 
   #facet_grid(season ~., scales = "free", space = "free") + # the facet doesn have equal size with this code
   facet_grid(season ~., scales = "free") + 
+  scale_fill_manual(values=c( c("#792C74", "#65771E", "#B65008", "#036879"))) +
   theme(strip.text.y = element_text(angle = 0)) +
-  theme_bw() + 
+  theme_classic() + 
   labs(x = "Number of vaccinees", y = "Strain", fill = "Per strain") + 
-  theme(legend.position = "top")
+  theme(legend.position = "top", text = element_text(size = 24))
+
+# violin plot to demonstrate the relcassification concept
+png("output/numParticipants_per_reClassGroups.png", width = 720)
+plot_reClassGroups 
+dev.off()
