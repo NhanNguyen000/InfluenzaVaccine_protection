@@ -4,6 +4,7 @@ rm(list = ls())
 
 library(tidyverse)
 library(readxl)
+library(venn)
 
 get.log2 <- function(dat) {
   library(tidyverse)
@@ -14,9 +15,10 @@ get.log2 <- function(dat) {
 }
 
 # load data ---------------------------------------
-load("metaDat_antibody.RData")
-load("protein_normDat.RData")
-load("metaboliteDat.RData")
+load("processedDat/metaDat_antibody.RData")
+load("processedDat/protein_normDat.RData")
+load("processedDat/metaboliteDat.RData")
+
 # donor info ---------------------------------------
 cohorts <- list()
 
@@ -159,10 +161,21 @@ cohorts$MN_all <- iMED$MNbothCohorts %>% rename("probandID" = "X..." )%>%
   mutate(across(ends_with("log2"), ~ifelse(is.infinite(.x), 0, .x)))
 
 
-# protein ---------------------------------------
+# protein ------------------------------------------------------------------------
+## check overlapped protein measured within seasons ---------------------------------------
+res.venn <- list("Season 2014 - 2015" = names(protein_normDat$iMED), 
+                 "Season 2019 - 2020" = names(protein_normDat$ZirFlu))
+
+png("output/proteinMeasures.png")
+v.table <- venn(res.venn, ilcs = 2, sncs = 1.5)
+dev.off()
+
+rm(res.venn, v.table)
+# iMED has 311 proteins, ZirFlu has 308 proteins -> overlapped proteins: 306 proteins
+
+## add overlapped proteins in the dataset for further analysis ----------------------------
 overlapped_proteins <- intersect(names(protein_normDat$iMED), names(protein_normDat$ZirFlu))
 length(overlapped_proteins)
-# iMED has 311 proteins, ZirFlu has 308 proteins -> overlapped proteins: 306 proteins
 
 protein_Dat <- list()
 
@@ -185,15 +198,20 @@ protein_Dat$ZirFlu_2020 <- protein_normDat$ZirFlu[
 # hist(protein_Dat$iMED_2014$ADA) # show quite normal distribution
 
 # metabolites ---------------------------------------
+## check overlapped metabolite measured within seasons ---------------------------------------
+res.venn <- list("Season 2014 - 2015" = unique(iMED_meboAnnot$Formula), 
+                 "Season 2019 - 2020" = ZirFlu_meboAnnot$Formula)
+
+png("output/metaboliteMeasures.png")
+v.table <- venn(res.venn, ilcs = 2, sncs = 1.5)
+dev.off()
+
+rm(res.venn, v.table)
+# iMED has 1326 metabolites (with 1345 metabolite Idx), ZirFlu has 786 metabolites -> overlapped metabolites: 508 metabolites
+
+## add overlapped metabolites in the dataset for further analysis ----------------------------
 overlapped_metabolites <- intersect(unique(iMED_meboAnnot$Formula), ZirFlu_meboAnnot$Formula)
 length(overlapped_metabolites)
-
-library(venn)
-res.venn <- list("Season 2014 and 2015" = unique(iMED_meboAnnot$Formula), 
-                 "Season 2019 and 2020" = ZirFlu_meboAnnot$Formula)
-v.table <- venn(res.venn)
-
-# iMED has 1326 metabolites (with 1345 metabolite Idx), ZirFlu has 786 metabolites -> overlapped metabolites: 508 metabolites
 
 mebo_Dat <- list()
 # iMED have case: 1 formula - multiple ionIdxs
@@ -215,13 +233,13 @@ mebo_Dat$ZirFlu_2020 <- ZirFlu_mebo[
   cohorts$donorSample_all$name[cohorts$donorSample_all$season == "2020"], overlapped_metabolites] %>%
   get.log2()
 
-summary(unlist(mebo_Dat$iMED_2014)) # check the value range
-summary(mebo_Dat$iMED_2014$C3H4O) # check the value range
-
-hist(unlist(mebo_Dat$iMED_2014)) # show less scale distribution compared to the raw data without log2
-hist(mebo_Dat$iMED_2014$C3H4O) # show quite normal distribution
+# summary(unlist(mebo_Dat$iMED_2014)) # check the value range
+# summary(mebo_Dat$iMED_2014$C3H4O) # check the value range
+# 
+# hist(unlist(mebo_Dat$iMED_2014)) # show less scale distribution compared to the raw data without log2
+# hist(mebo_Dat$iMED_2014$C3H4O) # show quite normal distribution
 
 
 # save data ------------------------------------------------
-save(cohorts, protein_Dat, mebo_Dat, file = "cohorts_dat.RData")
+save(cohorts, protein_Dat, mebo_Dat, file = "processedDat/cohorts_dat.RData")
 

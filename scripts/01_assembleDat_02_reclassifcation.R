@@ -21,7 +21,7 @@ get.reclassify <- function(dat, baseline_col, abFC_col, baseline_cutoff, abFC_cu
 }
 
 # load data =======================================================================
-load("cohorts_dat.RData")
+load("processedDat/cohorts_dat.RData")
 
 ## cutoff ------------------
 # (baseline < 40 ) == d0_low. (abFC >= 4) == abFC_high
@@ -44,4 +44,4 @@ cohorts$HAI_all <-  cohorts$HAI_all %>%
   cbind(as.data.frame(reclassify_temp) %>% 
           rename_with(~paste0(.x, "_reclassify")))
 # save data ------------------------------------------------
-save(cohorts, protein_Dat, mebo_Dat, file = "cohorts_dat.RData")
+save(cohorts, protein_Dat, mebo_Dat, file = "processedDat/cohorts_dat.RData")
