@@ -7,9 +7,9 @@ library(tidyverse)
 library(magrittr)
 library(reshape2)
 
-load("cohorts_dat.RData")
+load("processedDat/cohorts_dat.RData")
 
-# metadata for all healthy subjects -------------------------
+# metadata for all healthy subjects --------------------------------------------------
 metadata_healthy <- cohorts$HAI_all %>% 
   full_join(cohorts$donorInfo_all %>% 
               select(probandID, season, cohort, sex, age, condition)) %>%
@@ -17,8 +17,8 @@ metadata_healthy <- cohorts$HAI_all %>%
   filter(condition == "Healthy") %>%
   arrange(season, H1N1_reclassify, H1N1_abFC)
 
-
-# assign the positions (start and end) for each participant per seasons
+# prepare data for circo plot --------------------------------------------------
+## assign the positions (start and end) for each participant per seasons -----------------------------
 season_cohorts <- list()
 for (year in unique(metadata_healthy$season)) {
   season_cohorts[[year]] <- metadata_healthy %>% 
@@ -27,7 +27,7 @@ for (year in unique(metadata_healthy$season)) {
 }
 metadata_healthy_v2 <- season_cohorts %>% purrr::reduce(rbind)
 
-# step 1: the soverview file for cohort participant and their sex
+## step 1: the overview file for cohort participant and their sex -----------------------------
 metadata_healthy_v2  %>% count(cohort, season)
 
 part1 <- metadata_healthy_v2 %>% 
@@ -50,7 +50,7 @@ cohorts_sex <- rbind(part1, part2)
 
 write.table(cohorts_sex, file = 'processedDat/circos_input/cohorts_sex.txt', row.names = F, col.names = F, quote = F)
 
-# step 2: H1N1 strain files
+# step 2: H1N1 strain files ----------------------------------------------------------
 # H1N1 abFC
 H1N1_abFC <- metadata_healthy_v2 %>% select(season, start, end, H1N1_abFC)
 write.table(H1N1_abFC, file = 'processedDat/circos_input/H1N1_abFC.txt', row.names = F, col.names = F, quote = F)
@@ -65,7 +65,7 @@ write.table(H1N1_d0, file = 'processedDat/circos_input/H1N1_d0.txt', row.names =
 H1N1_d0_log2 <- metadata_healthy_v2 %>% select(season, start, end, H1N1_d0_log2)
 write.table(H1N1_d0_log2, file = 'processedDat/circos_input/H1N1_d0_log2.txt', row.names = F, col.names = F, quote = F)
 
-# step 2: H3N2 strain files
+# step 2: H3N2 strain files ----------------------------------------------------------
 # H3N2 abFC
 # H3N2_abFC <- metadata_healthy_v2 %>% select(season, start, end, H3N2_abFC)
 # write.table(H3N2_abFC, file = 'processedDat/circos_input/H3N2_abFC.txt', row.names = F, col.names = F, quote = F)
@@ -80,7 +80,7 @@ write.table(H3N2_d0, file = 'processedDat/circos_input/H3N2_d0.txt', row.names =
 H3N2_d0_log2 <- metadata_healthy_v2 %>% select(season, start, end, H3N2_d0_log2)
 write.table(H3N2_d0_log2, file = 'processedDat/circos_input/H3N2_d0_log2.txt', row.names = F, col.names = F, quote = F)
 
-# step 3: B strains files
+# step 3: B strains files ----------------------------------------------------------
 # B abFC for season 2014, 2015
 B_abFC_log2 <- metadata_healthy_v2 %>% select(season, start, end, B_abFC_log2) %>% drop_na()
 write.table(B_abFC_log2, file = 'processedDat/circos_input/B_abFC_log2.txt', row.names = F, col.names = F, quote = F)
