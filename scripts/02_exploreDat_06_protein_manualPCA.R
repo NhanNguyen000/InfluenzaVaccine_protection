@@ -24,7 +24,7 @@ get.pca_plot <- function(pca, metadat, groupType) {
 }
 
 # load data --------------------------
-load("cohorts_dat.RData")
+load("processedDat/cohorts_dat.RData")
 
 # metadata for all healthy subjects -------------------------
 metadata_healthy <- cohorts$HAI_all %>% 
@@ -55,7 +55,7 @@ summary(protein_pca)$importance[1:3, 1:5]
 pca_plotDat <- protein_pca$x %>% as.data.frame %>% rownames_to_column("name") %>% full_join(proteinDat_metadata)
 
 ## season ----------------------------------------
-pca_plotDat %>%
+pcaSeason <- pca_plotDat %>%
   ggplot(aes(PC1, PC2)) +
   geom_point(aes(color = season), size = 3, alpha=.5) +
   theme_classic() +
@@ -64,7 +64,13 @@ pca_plotDat %>%
   labs(
     x = paste0("PC1 [", round(100*summary(protein_pca)$importance["Proportion of Variance", "PC1"], digits = 2), "%]"),
     y = paste0("PC2 [", round(100*summary(protein_pca)$importance["Proportion of Variance", "PC2"], digits = 2), "%]")) + 
-  theme(legend.position = "top")
+  theme(legend.position = "top", text = element_text(size = 16))
+
+# save the plot 
+png("output/pcaProtein_perSeason.png")
+pcaSeason
+dev.off()
+
 
 ## season and sex --------------------
 pca_plotDat %>%

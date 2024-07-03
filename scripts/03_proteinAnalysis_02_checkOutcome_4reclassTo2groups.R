@@ -44,7 +44,7 @@ get.plotDat_clusterRow <- function(plotDat, colName, varColumn) {
 }
 
 # load data --------------------------------------------------------
-load("resPro_4reclass_2group.RData")
+load("processedDat/resPro_4reclass_2group.RData")
 
 # significant proteins / metabolites ------------------------------------------
 DAs <- resPro_4reclass_2group %>% 
@@ -75,7 +75,7 @@ tstat_longDat <- tstat_all %>%
   separate(season, sep = "_", into = c("cohort", "season")) %>%
   mutate(group = paste0(season, "_", strain))
 
-# protein/metabolite show consistent trend across strain and season ----------------------------------------------------
+# prepare data with proteins that show consistent trend across strain and season -------------------------------
 consistVars <- tstat_longDat %>% 
   mutate(direction = ifelse(tstat < 0, "down", ifelse(tstat > 0, "up", tstat))) %>%
   group_by(varName) %>% add_count(direction) %>%
@@ -100,7 +100,7 @@ tstat_longDat_consistVars <- tstat_all %>%
   separate(season, sep = "_", into = c("cohort", "season")) %>%
   mutate(group = paste0(season, "_", strain))
 
-## heatmap --------------------------------
+## heatmap ----------------------------------------------------------------
 sigPval_vars <- tstat_longDat %>% 
   filter(p.value < 0.05) %>% select(varName) %>% unlist() %>% unique()
 
@@ -116,14 +116,20 @@ plotDat_order <- get.plotDat_clusterRow(plotDat,
                                         colName = "group", 
                                         varColumn = "tstat")
 
-plotDat_order %>%
+heatmapPlot <- plotDat_order %>%
   ggplot(aes(x = group, y = varName, fill = tstat)) + 
   geom_tile() +
-  geom_text(aes(label = ifelse(padj < 0.05, "**", NA))) +
-  geom_text(aes(label = ifelse(p.value < 0.05, "*", NA))) +
+  geom_text(aes(label = ifelse(padj < 0.05, "**", NA)), size = 10) +
+  geom_text(aes(label = ifelse(p.value < 0.05, "*", NA)), size = 10) +
   scale_fill_gradient2(low = "blue", mid = "white", high = "red") + 
   theme_bw() + 
-  theme(axis.text.x = element_text(angle = 25, hjust = 1))
+  theme(axis.text.x = element_text(angle = 25, hjust = 1), text = element_text(size = 24))
 
-plotDat_DAPs <- plotDat_order
-save(plotDat_DAPs, file = "plotDat_DAPs.RData")
+# save the plot 
+png("output/heatmapProteins.png", width = 960, height = 1200)
+heatmapPlot
+dev.off()
+
+
+# plotDat_DAPs <- plotDat_order
+# save(plotDat_DAPs, file = "plotDat_DAPs.RData")

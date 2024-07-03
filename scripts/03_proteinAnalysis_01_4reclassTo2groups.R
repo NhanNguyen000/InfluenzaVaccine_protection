@@ -50,13 +50,13 @@ get.limmaRes_perStrain <- function(metadat, inputDat, strain_groups) {
 }
 
 # load data =======================================================================
-load("cohorts_dat.RData")
+load("processedDat/cohorts_dat.RData")
 
 ## metadata for all healthy subjects -------------------------
 metadata_healthy <- cohorts$HAI_all %>% 
   full_join(cohorts$donorInfo_all %>% 
               select(probandID, season, cohort, sex, age, condition)) %>%
-  left_join(cohorts$donorSample_all %>% filter(time == "T1")) %>%
+  left_join(cohorts$donorSample_all %>% filter(time == "d0")) %>%
   filter(condition == "Healthy") %>%
   mutate_at(vars(contains("reclassify")), ~convert_protectees(.x)) %>%
   mutate_at(vars(contains("reclassify")), ~factor(.x, levels = c("LL", "protectee")))
@@ -105,4 +105,4 @@ resPro_4reclass_2group <- list("iMED_2014" = res_iMED_2014,
                                "ZirFlu_2019" = res_ZirFlu_2019,
                                "ZirFlu_2020" = res_ZirFlu_2020)
 
-save(resPro_4reclass_2group, file = "resPro_4reclass_2group.RData")
+save(resPro_4reclass_2group, file = "processedDat/resPro_4reclass_2group.RData")
