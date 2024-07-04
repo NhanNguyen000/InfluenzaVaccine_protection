@@ -1,9 +1,12 @@
 # Martijn data: /vol/projects/CIIM/Influenza/iMED/supplemental_data  
 # Associations of 300BCG and 500FG metabolites to cytokines and cellcounts in the subfolders here. Look in output/assoc_met_*.csv
 
-C4H8O3_annot <- iMED$metabolite_annot %>% filter(Formula == "C4H8O3")
+iMED_metabolite_annot <- read.xlsx('/vol/projects/CIIM/Influenza/iMED/metabolic/raw_data/tables/DATA_CURATED_reformatted.xlsx',
+                                   sheet = 'annotation') %>% fill(ionIdx, .direction = "down")
 
-# check in 500FG
+C4H8O3_annot <- iMED_metabolite_annot %>% filter(Formula == "C4H8O3")
+
+# check in 500FG  ---------------------------------------------------------------
 assocTypes <- c("assoc_met_cellcount.csv", "assoc_met_cytokine.csv", "assoc_met_prot.csv")
 for (assocType in assocTypes) {
   dat <- read.csv(paste0("/vol/projects/CIIM/Influenza/iMED/supplemental_data/500FG/output/", 
@@ -13,7 +16,7 @@ for (assocType in assocTypes) {
     filter(p.value < 0.05)
 } # no C4H8O3 in 500FG
 
-# check in 300BCG
+# check in 300BCG  ---------------------------------------------------------------
 C4H8O3_assoc_300BCG <- list()
 assocTypes <- c("assoc_met_cellcounts.csv", "assoc_met_cytokines.csv", "assoc_met_prot.csv")
 for (assocType in assocTypes) {

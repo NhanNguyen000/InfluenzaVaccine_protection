@@ -14,24 +14,23 @@ metadata_healthy <- cohorts$HAI_all %>%
   mutate(group = paste0(cohort, "_", season)) %>%
   mutate_at(vars(contains("reclassify")), ~factor(.x, levels = c("LL", "LH", "HL", "HH")))
 
-# protein data -------------------------
-proteinDat_metadata <- protein_Dat %>% 
+# metabolite data -------------------------
+metaboliteDat_metadata <- mebo_Dat %>%
   lapply(function(x) x %>% rownames_to_column("name")) %>%
-  bind_rows(.id = "group") %>% select(group, name) %>% 
+  bind_rows(.id = "group") %>% select(group, name) %>%
   inner_join(metadata_healthy)
 
-proteinDat <- protein_Dat %>% 
+metaboliteDat <- mebo_Dat %>%
   lapply(function(x) x %>% rownames_to_column("name")) %>%
-  bind_rows(.id = "group") %>% filter(name %in% proteinDat_metadata$name) %>%
+  bind_rows(.id = "group") %>% filter(name %in% metaboliteDat_metadata$name) %>%
   select(-group) %>% column_to_rownames("name")
 
-protein_pca <- predict(preProcess(x=proteinDat, method = "knnImpute"), # imput the NA value
-                       proteinDat) %>% prcomp()
-summary(protein_pca)$importance[1:3, 1:5]
-
+metabolite_pca <- metaboliteDat %>% select(-matches("_2")) %>% # with metabolites has double ionIdxs in iMED, remove the measures of the 2nd ionIdx
+  prcomp()
+summary(metabolite_pca)$importance[1:3, 1:5]
 
 # manual PCA plot-------------------------------------
-pca_plotDat <- protein_pca$x %>% as.data.frame %>% rownames_to_column("name") %>% full_join(proteinDat_metadata)
+pca_plotDat <- metabolite_pca$x %>% as.data.frame %>% rownames_to_column("name") %>% full_join(metaboliteDat_metadata)
 
 ## season ----------------------------------------
 pcaSeason <- pca_plotDat %>%
@@ -41,12 +40,12 @@ pcaSeason <- pca_plotDat %>%
   theme(aspect.ratio = 1, plot.title = element_text(hjust = .5)) +
   ggsci::scale_color_nejm() +
   labs(
-    x = paste0("PC1 [", round(100*summary(protein_pca)$importance["Proportion of Variance", "PC1"], digits = 2), "%]"),
-    y = paste0("PC2 [", round(100*summary(protein_pca)$importance["Proportion of Variance", "PC2"], digits = 2), "%]")) + 
+    x = paste0("PC1 [", round(100*summary(metabolite_pca)$importance["Proportion of Variance", "PC1"], digits = 2), "%]"),
+    y = paste0("PC2 [", round(100*summary(metabolite_pca)$importance["Proportion of Variance", "PC2"], digits = 2), "%]")) + 
   theme(legend.position = "top", text = element_text(size = 16))
 
 # save the plot 
-png("output/pcaProtein_perSeason.png")
+png("output/pcaMetabolite_perSeason.png")
 pcaSeason
 dev.off()
 
@@ -59,6 +58,7 @@ pca_plotDat %>%
   theme(aspect.ratio = 1, plot.title = element_text(hjust = .5)) +
   ggsci::scale_color_nejm() +
   labs(
-    x = paste0("PC1 [", round(100*summary(protein_pca)$importance["Proportion of Variance", "PC1"], digits = 2), "%]"),
-    y = paste0("PC2 [", round(100*summary(protein_pca)$importance["Proportion of Variance", "PC2"], digits = 2), "%]")) + 
+    x = paste0("PC1 [", round(100*summary(metabolite_pca)$importance["Proportion of Variance", "PC1"], digits = 2), "%]"),
+    y = paste0("PC2 [", round(100*summary(metabolite_pca)$importance["Proportion of Variance", "PC2"], digits = 2), "%]")) + 
   theme(legend.position = "top")
+

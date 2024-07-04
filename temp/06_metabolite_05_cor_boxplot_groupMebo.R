@@ -3,8 +3,8 @@ rm(list = ls())
 library(tidyverse)
 library(ggpubr)
 # load data =======================================================================
-load("cohorts_dat.RData")
-load("selected_DAMs_padj2015.RData")
+load("processedDat/cohorts_dat.RData")
+#load("selected_DAMs_padj2015.RData")
 
 ## metadata for all healthy subjects -------------------------
 metadata_healthy <- cohorts$HAI_all %>% 

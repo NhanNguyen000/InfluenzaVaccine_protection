@@ -39,7 +39,7 @@ metadat_boxplot <- inputDat %>%
   mutate(abBaseline = ifelse(reclassify == "LL" | reclassify == "LH", "low", "high"))
 
 
-##make boxplot --------------------------------------------------
+## make boxplot --------------------------------------------------
 # based on reclassification 
 boxplot_reClass <- metadat_boxplot %>% 
   filter(strainSeason %in% strainSeasons) %>%

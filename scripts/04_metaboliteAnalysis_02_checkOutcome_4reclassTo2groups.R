@@ -45,7 +45,7 @@ get.plotDat_clusterRow <- function(plotDat, colName, varColumn) {
 }
 
 # load data --------------------------------------------------------
-load("resMebo_4reclass_2group.RData")
+load("processedDat/resMebo_4reclass_2group.RData")
 
 # significant proteins / metabolites ------------------------------------------
 DAs <- resMebo_4reclass_2group %>% 
@@ -76,10 +76,12 @@ tstat_longDat <- tstat_all %>%
   separate(season, sep = "_", into = c("cohort", "season")) %>%
   mutate(group = paste0(season, "_", strain))
 
-# protein/metabolite show consistent trend across strain and season ----------------------------------------------------
+# prepare data with metabolites that show consistent trend across strain and season ------------------------------- 
+selectedSeasons <- c("2014_H1N1", "2015_H1N1", "2019_H1N1", "2020_H1N1",
+                     "2014_B", "2015_B", "2015_H3N2", "2020_Byamagata") 
+
 consistVars <- tstat_longDat %>%
-  filter(group %in% c("2014_H1N1", "2015_H1N1", "2019_H1N1", "2020_H1N1",
-                      "2014_B", "2015_B", "2015_H3N2", "2020_Byamagata")) %>%
+  filter(group %in% selectedSeasons) %>%
   mutate(direction = ifelse(tstat < 0, "down", ifelse(tstat > 0, "up", tstat))) %>%
   group_by(varName) %>% add_count(direction) %>%
   filter(n >6) %>% # The up/down trend appear in 6 out of 8 comparison (75% across strain and season) 
@@ -105,18 +107,15 @@ tstat_longDat_consistVars <- tstat_all %>%
 
 ## heatmap --------------------------------
 sigPval_vars <- tstat_longDat %>%
-  filter(group %in% c("2014_H1N1", "2015_H1N1", "2019_H1N1", "2020_H1N1",
-                      "2014_B", "2015_B", "2015_H3N2", "2020_Byamagata")) %>%
+  filter(group %in% selectedSeasons) %>%
   filter(p.value < 0.05) %>% select(varName) %>% unlist() %>% unique()
 
 selected_vars <- intersect(consistVars, sigPval_vars)
-save(selected_vars, sigPval_vars, file = "selected_consist_sigPval_DAMs.RData") # 30 and 180 formulas
+#save(selected_vars, sigPval_vars, file = "selected_consist_sigPval_DAMs.RData") # 30 and 180 formulas
 
 plotDat <- tstat_longDat_consistVars %>% 
   filter(varName %in% selected_vars) %>%
-  slice(-which(group %in% c("2014_H3N2", 
-                            "2019_Bvictoria", "2019_Byamagata", "2019_H3N2", 
-                            "2020_Bvictoria", "2020_H3N2"))) # remove some group if needed
+  slice(which(group %in% selectedSeasons ))
 
 unique((plotDat %>% filter(padj < 0.05))$varName)
 
@@ -124,29 +123,33 @@ plotDat_order <- get.plotDat_clusterRow(plotDat,
                                         colName = "group", 
                                         varColumn = "tstat")
 
-plotDat_order %>%
+heatmapPlot <- plotDat_order %>%
   ggplot(aes(x = group, y = varName, fill = tstat)) + 
   geom_tile() +
-  geom_text(aes(label = ifelse(padj < 0.05, "**", NA))) +
-  geom_text(aes(label = ifelse(p.value < 0.05, "*", NA))) +
+  geom_text(aes(label = ifelse(padj < 0.05, "**", NA)), size = 10) +
+  geom_text(aes(label = ifelse(p.value < 0.05, "*", NA)), size = 10) +
   scale_fill_gradient2(low = "blue", mid = "white", high = "red") + 
   theme_bw() + 
-  theme(axis.text.x = element_text(angle = 25, hjust = 1))
+  theme(axis.text.x = element_text(angle = 25, hjust = 1), text = element_text(size = 24))
 
-plotDat_DAPs <- plotDat_order
-save(plotDat_DAPs, file = "plotDat_DAPs.RData")
+# save the plot 
+png("output/heatmapMetabolites.png", width = 960, height = 1008)
+heatmapPlot
+dev.off()
+
+# plotDat_DAPs <- plotDat_order
+# save(plotDat_DAPs, file = "plotDat_DAPs.RData")
 
 ## select metabolites  --------------------------------
 library(openxlsx)
 rawDat_iMED_meboAnnot <- read.xlsx('/vol/projects/CIIM/Influenza/iMED/metabolic/raw_data/tables/DATA_CURATED_reformatted.xlsx',
                                    sheet = 'annotation') %>% fill(ionIdx, .direction = "down")
 
-k <- rawDat_iMED_meboAnnot %>% filter(Formula %in% selected_vars) # 30 formulas
-k <- rawDat_iMED_meboAnnot %>% filter(Formula %in% sigPval_vars) # 180 formulas
-k2 <- k %>% slice(grep("HMDB", k$CompoundID))
+selectedMebos <- rawDat_iMED_meboAnnot %>% filter(Formula %in% selected_vars) # 30 formulas
+all_sigMebos <- rawDat_iMED_meboAnnot %>% filter(Formula %in% sigPval_vars) # 180 formulas
 
-write.table(k2$CompoundID, file = "HMDB_test.txt", quote = FALSE, col.names = FALSE, row.names = FALSE)
-
+write.table(selectedMebos$CompoundID, file = "processedDat/compoundIDs_selectedMebos.txt", quote = FALSE, col.names = FALSE, row.names = FALSE)
+write.table(all_sigMebos$CompoundID, file = "processedDat/compoundIDs_allSigMebos.txt", quote = FALSE, col.names = FALSE, row.names = FALSE)
 
 
 

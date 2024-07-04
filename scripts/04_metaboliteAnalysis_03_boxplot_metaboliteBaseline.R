@@ -2,9 +2,8 @@ rm(list = ls())
 
 library(tidyverse)
 library(ggpubr)
-# load data =======================================================================
-load("cohorts_dat.RData")
-load("selected_consist_sigPval_DAMs.RData")
+# load data ====================================================================
+load("processedDat/cohorts_dat.RData")
 
 ## metadata for all healthy subjects -------------------------
 metadata_healthy <- cohorts$HAI_all %>% 
@@ -18,31 +17,19 @@ inputDat <- mebo_Dat %>%
   lapply(function(x) x %>% rownames_to_column("name")) %>%
   purrr::reduce(full_join) %>% right_join(metadata_healthy)
 
-# boxplot ================================
+# boxplot =======================================================================
 compare_responder <- list( c("NR", "Other"), c("Other", "TR"), c("NR", "TR") )
 compare_reClass <- list( c("LL", "LH"), c("LL", "HL"), c("LL", "HH"))
 compare_abFC <- list(c("R", "NR"))
-compare_abT1 <- list(c("low", "high"))
+compare_abD0 <- list(c("low", "high"))
+
+## select season and metabolites --------------------------------------------------
+strainSeasons <- c("H1N1_2014", "H1N1_2015", "H1N1_2019", "H1N1_2020",
+                   "B_2014", "B_2015", "H3N2_2015", "Byamagata_2020") # season have at least >= 3 participant per reclassification group
 
 mebo <- "C18H32O2"
+mebo <- "C3H7NO2S"
 
-metadat_boxplot <- inputDat %>% 
-  select(season, responder, c(mebo), matches("_abFC|_d0|_d28|_reclassify")) %>%
-  mutate(H1N1_abFC = ifelse(H1N1_reclassify == "LH" |H1N1_reclassify == "HH", "R", "NR")) %>%
-  mutate(H1N1_abBaseline = ifelse(H1N1_d0 > 40, "high", "low")) %>%
-  mutate(H1N1_abBaseline = factor(H1N1_abBaseline, levels = c("low", "high")))
-
-# based on reclassification 
-ggboxplot(metadat_boxplot, x = "H1N1_reclassify", y = mebo,
-          paletter = "jco", add = "jitter") + facet_wrap(~season, nrow = 1) +
-  stat_compare_means(comparisons = compare_reClass, method = "t.test")
-
-# based on abFC: NR vs R
-ggboxplot(metadat_boxplot, x = "H1N1_abFC", y = mebo,
-          paletter = "jco", add = "jitter") + facet_wrap(~season, nrow = 1) + 
-  stat_compare_means(comparisons = compare_abFC, method = "t.test")
-
-# boxplot with other strains -------------------
 # selected_vars
 mebo <- "C9H14O4"
 mebo <- "C19H40NO7P"
@@ -94,6 +81,7 @@ mebo <- "C7H14N2O3" # theanine
 mebo <- "C10H17N3O6S" # gluathione - could not measure
 mebo <- "C5H9NO4" # glutamate
 
+## prepare the ploting data --------------------------------------------------
 metadat_boxplot <- inputDat %>% 
   select(season, responder, c(mebo), matches("_abFC|_d0|_d28|_reclassify")) %>%
   pivot_longer(matches("reclassify"), names_to = "strain", values_to = "reclassify") %>%
@@ -103,30 +91,52 @@ metadat_boxplot <- inputDat %>%
   mutate(abFC = ifelse(reclassify == "LH" | reclassify == "HH", "R", "NR")) %>%
   mutate(abBaseline = ifelse(reclassify == "LL" | reclassify == "LH", "low", "high"))
 
+## make boxplot --------------------------------------------------
 # based on reclassification 
-metadat_boxplot %>% 
-  filter(strainSeason %in% 
-           c("H1N1_2014", "H1N1_2015", "H1N1_2019", "H1N1_2020",
-             "B_2014", "B_2015", "H3N2_2015", "Byamagata_2020")) %>%
+boxplot_reClass  <- metadat_boxplot %>% 
+  filter(strainSeason %in% strainSeasons) %>%
   ggboxplot(x = "reclassify", y = mebo,
-            paletter = "jco", add = "jitter") + 
+            color = "#898366", add = "jitter", add.params = list(size = 3, alpha = 0.5)) + 
   facet_wrap(~strainSeason, nrow = 2) +
-  stat_compare_means(comparisons = compare_reClass, method = "t.test")
+  stat_compare_means(comparisons = compare_reClass, size = 5, method = "t.test")+
+  theme(text = element_text(size = 18))
 
+boxplot_reClass 
 
 # based on abFC: NR vs R
-metadat_boxplot %>% 
-  filter(strain == "H1N1" | strainSeason %in% c("B_2014", "B_2015", "H3N2_2015", "Byamagata_2020")) %>%
+boxplot_abFC <- metadat_boxplot %>% 
+  filter(strainSeason %in% strainSeasons) %>%
   ggboxplot(x = "abFC", y = mebo,
-            paletter = "jco", add = "jitter") + 
-  facet_wrap(~strainSeason, nrow = 1) + 
-  stat_compare_means(comparisons = compare_abFC, method = "t.test")
+            color = "#898366", add = "jitter", add.params = list(size = 3, alpha = 0.5)) + 
+  facet_wrap(~strainSeason, nrow = 2) + 
+  stat_compare_means(comparisons = compare_abFC, size = 5, method = "t.test")+
+  theme(text = element_text(size = 18))
+
+boxplot_abFC
 
 # based on abT1: low Ab vs high Ab
-metadat_boxplot %>% 
-  filter(strain == "H1N1" | strainSeason %in% c("B_2014", "B_2015", "H3N2_2015", "Byamagata_2020")) %>%
+boxplot_abD0 <- metadat_boxplot %>% 
+  filter(strainSeason %in% strainSeasons) %>%
   ggboxplot(x = "abBaseline", y = mebo,
-            paletter = "jco", add = "jitter") + 
-  facet_wrap(~strainSeason, nrow = 1) + 
-  stat_compare_means(comparisons = compare_abD0, method = "t.test")
+            color = "#898366", add = "jitter", add.params = list(size = 3, alpha = 0.5)) + 
+  facet_wrap(~strainSeason, nrow = 2) + 
+  stat_compare_means(comparisons = compare_abD0, size = 5, method = "t.test")+
+  theme(text = element_text(size = 18))
+
+boxplot_abD0 
+
+
+## save the plot --------------------------------------------------
+png(paste0("output/boxplotMetabolite_reClass_", mebo, ".png"), width = 720, height = 696)
+boxplot_reClass 
+dev.off()
+
+png(paste0("output/boxplotMetabolite_abFC_", mebo, ".png"), width = 576, height = 696)
+boxplot_abFC
+dev.off()
+
+png(paste0("output/boxplotMetabolite_abD0_", mebo, ".png"), width = 576, height = 696)
+boxplot_abD0 
+dev.off()
+
 
