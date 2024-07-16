@@ -27,6 +27,7 @@ compare_abD0 <- list(c("low", "high"))
 strainSeasons <- c("H1N1_2014", "H1N1_2015", "H1N1_2019", "H1N1_2020",
                    "B_2014", "B_2015", "H3N2_2015", "Byamagata_2020") # season have at least >= 3 participant per reclassification group
 protein <- "CD83"
+#protein <- "CCL7"
 
 ## prepare the ploting data --------------------------------------------------
 metadat_boxplot <- inputDat %>% 

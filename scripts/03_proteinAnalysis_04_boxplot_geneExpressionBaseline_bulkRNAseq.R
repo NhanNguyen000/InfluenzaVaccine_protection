@@ -10,14 +10,14 @@ load("/vol/projects/CIIM/Influenza/iMED/transcriptomic/transcriptomeDF.RData")
 # View(transcriptomeList[[2]])
 iMED_transcrip_T1 <- transcriptomeList[[2]] %>% filter(SampleTime == "T1") # time T1 in trancriptome = d0
 iMED_transcripDat <- transcriptomeList[[1]] %>% as.data.frame %>% 
-  select(iMED_transcrip_T1$SampleName) %>% as.data.frame()
+  dplyr::select(iMED_transcrip_T1$SampleName) %>% as.data.frame()
 
 
 ## metadata for all healthy subjects -------------------------
 load("processedDat/cohorts_dat.RData")
 metadata_healthy <- cohorts$HAI_all %>% 
   full_join(cohorts$donorInfo_all %>% 
-              select(probandID, season, cohort, sex, age, condition)) %>%
+              dplyr::select(probandID, season, cohort, sex, age, condition)) %>%
   left_join(cohorts$donorSample_all %>% filter(time == "d0")) %>%
   filter(condition == "Healthy") %>%
   mutate_at(vars(contains("reclassify")), ~factor(.x, levels = c("LL", "LH", "HL", "HH")))
@@ -29,10 +29,18 @@ metadat_iMED_2015 <- metadata_healthy %>% filter(season == "2015", cohort == "iM
 # boxplot for selected proteins at baseline------------------------------------------
 ## prepare plot data ------------------------------------------
 protein <- "CD83"
+protein <- "TMEM51"
+protein <- "IFT52"
+protein <- "ARSA"
+protein <- "RIPOR1"
+protein <- "CRYL1"
+protein <- "TMEM204"
+protein <- "ACVR2B"
+protein <- "RNMT"
 
 plotDat_boxplot <- metadat_iMED_2015 %>% 
   full_join(iMED_transcripDat %>% t() %>% 
-              as.data.frame %>% select(protein) %>% rownames_to_column("SampleName")) %>%
+              as.data.frame %>% dplyr::select(protein) %>% rownames_to_column("SampleName")) %>%
   mutate(H1N1_abFC = ifelse(H1N1_reclassify == "LH" |H1N1_reclassify == "HH", "R", "NR")) %>%
   mutate(H1N1_abBaseline = ifelse(H1N1_d0 > 40, "high", "low")) %>%
   mutate(H1N1_abBaseline = factor(H1N1_abBaseline, levels = c("low", "high")))
