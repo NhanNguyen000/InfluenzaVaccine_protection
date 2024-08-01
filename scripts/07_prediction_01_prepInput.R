@@ -1,8 +1,6 @@
 rm(list = ls())
 
 library(tidyverse)
-library(magrittr)
-library(caret)
 
 convert_protectees <- function(input) {
   # Aim: convert the vecotr of 4 groups reclassification (LL, LH, HL, HH) into 2 groups: LL and protectee (LH, HL HH)
@@ -10,7 +8,6 @@ convert_protectees <- function(input) {
   return(outcome)
 }
 
-# check NAs percentage
 get.rmProteins <- function(dat, NA_cutoff) {
   # Description: identify variable have more missing value (NA) than the NA threshold (NA cutoff)
   
@@ -24,7 +21,7 @@ get.rmProteins <- function(dat, NA_cutoff) {
 }
 
 # load data =======================================================================
-load("/vol/projects/CIIM/Influenza/ZirrFlu/InfluenzaCohorts_NhanNguyen/cohorts_dat.RData")
+load("processedDat/cohorts_dat.RData")
 
 ## metadata for all healthy subjects -------------------------
 metadata_healthy <- cohorts$HAI_all %>% 
@@ -36,7 +33,8 @@ metadata_healthy <- cohorts$HAI_all %>%
   mutate_at(vars(contains("reclassify")), ~factor(.x, levels = c("LL", "protectee"))) %>%
   mutate(sex = ifelse(sex == "m", 0, 1))
 
-# impute protein data --------------------------------
+## impute protein data --------------------------------
+# check NAs percentage
 cutoff <- 0.2
 rmProteins <- list()
 for (season in names(protein_Dat)) {
@@ -45,14 +43,11 @@ for (season in names(protein_Dat)) {
 rmProteins # season 2019 and 2020, 14 proteins have a lot of NA --> can use 292/306 protein
 rmProtein_names <- unique(rmProteins %>% lapply(function(x) names(x)) %>% unlist())
 
-proteinDat_impute <- list()
-for (season in names(protein_Dat)) {
-  proteinDat_impute[[season]] <- protein_Dat[[season]] %>%
-    select(-rmProtein_names) %>%
-    mutate_if(is.numeric, function(x) ifelse(is.na(x), median(x, na.rm = TRUE), x))
-}
+proteinDat_impute <- protein_Dat %>%
+  lapply(function(x) x %>% select(-rmProtein_names) %>%
+           mutate_if(is.numeric, function(x) ifelse(is.na(x), median(x, na.rm = TRUE), x)))
 
-# prepare input data ------------------------------------------------------
+# prepare input data --------------------------------------------------------------
 inputDat <- proteinDat_impute %>% purrr::reduce(rbind) %>% 
   cbind(mebo_Dat %>% purrr::reduce(rbind)) %>%
   as.data.frame %>% rownames_to_column("name")
@@ -65,16 +60,20 @@ dat_temp %>% count(season, B_reclassify) # LL group size >= 3 in all 2 seasons 2
 dat_temp %>% count(season, Bvictoria_reclassify) # LL group size < 3 in all 2 seasons 2019 and 2020 --> can not use 
 dat_temp %>% count(season, Byamagata_reclassify) # LL group size >= 3 in seasons 2020 --> can use season 2020
 
-## prepare train-test --------------------------------
+# save the input (strain and validation set) for the prediction model ----------------
+
+## input variable --------------------------------------------------------------
+proNames <- colnames(proteinDat_impute$iMED_2014)
+meboNames <- colnames(mebo_Dat$ZirFlu_2019)
+
+## input with H1N1 season 2015 is train set------------------------------------------
 trainSet <- dat_temp %>% filter(season == "2015") %>% 
   rename("reclassify" = "H1N1_reclassify", "ab_d0" = "H1N1_d0")
 trainSet %>% count(reclassify)
 
-
-## prepare validation-test --------------------------------
 valiSets <- list()
 # for H1N1
-for (year in c("2014", "2015", "2019", "2020")) {
+for (year in c("2014", "2019", "2020")) {
   valiSets[[paste0("H1N1_", year)]] <- dat_temp %>% 
     filter(season == year) %>% 
     rename("reclassify" = "H1N1_reclassify", "ab_d0" = "H1N1_d0")
@@ -97,56 +96,74 @@ valiSets$Byamagata<- dat_temp %>%
   filter(season == "2020") %>% 
   rename("reclassify" = "Byamagata_reclassify", "ab_d0" = "Byamagata_d0")
 
+valiSets %>% lapply(function(x) x%>% count(reclassify))
+
+### save the input ---------------------------------------------------------
+save(trainSet, valiSets, proNames, meboNames, file = "processedDat/predictInput_H1N1trainSet.RData")
+
+## input with H3N2 season 2015 is train set------------------------------------------
+rm(trainSet, valiSets)
+
+trainSet <- dat_temp %>% filter(season == "2015") %>% 
+  rename("reclassify" = "H3N2_reclassify", "ab_d0" = "H3N2_d0")
+trainSet %>% count(reclassify)
+
+valiSets <- list()
+# for H1N1
+for (year in c("2014", "2015", "2019", "2020")) {
+  valiSets[[paste0("H1N1_", year)]] <- dat_temp %>% 
+    filter(season == year) %>% 
+    rename("reclassify" = "H1N1_reclassify", "ab_d0" = "H1N1_d0")
+}
+
+# for B
+for (year in c("2014", "2015")) {
+  valiSets[[paste0("B_", year)]] <- dat_temp %>% 
+    filter(season == year) %>% 
+    rename("reclassify" = "B_reclassify", "ab_d0" = "B_d0")
+}
+
+# for Byamagata
+valiSets$Byamagata<- dat_temp %>% 
+  filter(season == "2020") %>% 
+  rename("reclassify" = "Byamagata_reclassify", "ab_d0" = "Byamagata_d0")
 
 valiSets %>% lapply(function(x) x%>% count(reclassify))
 
-## input variable --------------------------------
-proNames <- colnames(proteinDat_impute$iMED_2014)
-meboNames <- colnames(mebo_Dat$ZirFlu_2019)
+### save the input ---------------------------------------------------------
+save(trainSet, valiSets, proNames, meboNames, file = "processedDat/predictInput_H3N2trainSet.RData")
 
-inputVars <- c("age", "sex", "ab_d0", proNames, meboNames)
+## input with B season 2015 is train set------------------------------------------
+rm(trainSet, valiSets)
 
-# prepare input and validation sets
-train_inputSet <- trainSet[, inputVars]
-train_predOut <- trainSet[, c("reclassify")] %>% as.vector() %>% unlist()
+trainSet <- dat_temp %>% filter(season == "2015") %>% 
+  rename("reclassify" = "B_reclassify", "ab_d0" = "B_d0")
+trainSet %>% count(reclassify)
 
-validation_inputSets <- valiSets %>% lapply(function(x) x[, inputVars])
-validation_predOuts <- valiSets %>% 
-  lapply(function(x) x[, c("reclassify")] %>% as.vector() %>% unlist() %>% as.factor())
-
-
-# Run models (run in Slum/server) ==========================================
-set.seed(123) #set the seed to make your partition reproducible
-
-#selected_metric = 'Accuracy' # for classification
-selected_metric =  "Kappa" # similar to classification accuracy but it is useful to normalize the imbalance in classes
-selected_crossVal <- trainControl(method="repeatedcv", number = 5, 
-                                  repeats = 10)
-
-method_list <- c("rf", "svmRadial", "nb", "knn", "nnet")
-nreps <- 10
-
-netFits <- list()
-netFit_pred <- list()
-
-for (selected_method in method_list) {
-  
-  for (i in 1:nreps) {
-    netFits[[selected_method]][[i]] <- train(x = train_inputSet, y = train_predOut,
-                          method = selected_method, metric = selected_metric,
-                          tuneLength =  30,
-                          trControl = selected_crossVal)
-    
-    for (valiSet in names(validation_inputSets)) {
-      val.pred_temp <- predict(netFits[[selected_method]][[i]], 
-                               newdata = validation_inputSets[[valiSet]], 
-                               type = 'raw')
-      netFit_pred[[selected_method]][[valiSet]][[i]] <- confusionMatrix(
-        val.pred_temp, validation_predOuts[[valiSet]]) # Training accuracy
-    }
-    
-    print(paste0("Run ", i, " time."))
-  }
-  save(netFits, netFit_pred, file = paste0("res.predModel_reclassify_", method, ".RData"))
+valiSets <- list()
+# for H1N1
+for (year in c("2014", "2015", "2019", "2020")) {
+  valiSets[[paste0("H1N1_", year)]] <- dat_temp %>% 
+    filter(season == year) %>% 
+    rename("reclassify" = "H1N1_reclassify", "ab_d0" = "H1N1_d0")
 }
 
+# for H3N2
+valiSets$H3N2_2015 <- dat_temp %>% 
+  filter(season == "2015") %>% 
+  rename("reclassify" = "H3N2_reclassify", "ab_d0" = "H3N2_d0")
+
+# for B
+valiSets$B_2014 <- dat_temp %>% 
+  filter(season == "2014") %>% 
+  rename("reclassify" = "B_reclassify", "ab_d0" = "B_d0")
+
+# for Byamagata
+valiSets$Byamagata<- dat_temp %>% 
+  filter(season == "2020") %>% 
+  rename("reclassify" = "Byamagata_reclassify", "ab_d0" = "Byamagata_d0")
+
+valiSets %>% lapply(function(x) x%>% count(reclassify))
+
+### save the input ---------------------------------------------------------
+save(trainSet, valiSets, proNames, meboNames, file = "processedDat/predictInput_BtrainSet.RData")

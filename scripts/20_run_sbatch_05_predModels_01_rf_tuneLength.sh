@@ -14,7 +14,7 @@
 #SBATCH --clusters=bioinf
 
 cd /vol/projects/BIIM/Influenza/ZirrFlu/InfluenzaCohorts_NhanNguyen/
-Rscript scripts/16_predModels_01_rf_tuneLength.R
+Rscript scripts/07_prediction_02_runAlgorithms_01_rf_tuneLength.R
 
 
 /usr/bin/hostname

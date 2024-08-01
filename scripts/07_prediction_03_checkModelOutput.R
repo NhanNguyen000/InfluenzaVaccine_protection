@@ -7,10 +7,11 @@ library(glmnet)
 
 # model predictions in validation set ====================================
 models <- c("knn", "nnet", "glmnet", "rf_tuneLength", "rf", "smv", "xgboost")
+models <- c("knn", "glmnet", "smv", "xgboost")
 
 netFit_pred_params <- list()
 for (nameModel in models) {
-  load(paste0("res.predModel_", nameModel, ".RData"))
+  load(paste0("processedDat/prediction_res_", nameModel, ".RData"))
   
   netFit_parameters_total <- netFit_pred %>%
     lapply(function(x) x %>% 
@@ -28,6 +29,17 @@ for (nameModel in models) {
 
 # all models
 netFit_pred_params_total <- netFit_pred_params %>% bind_rows(.id = "model")
+
+# prediction on train set
+netFit_pred_params_total %>% filter(repeated_run == "trainSet") %>%
+  ggplot(aes(x = 1-Specificity, y = Sensitivity)) + 
+  geom_jitter(aes(col = model), size = 3, alpha = 0.9) + 
+  geom_abline(slope = 1, linetype = "dashed")+
+  xlim(0, 1) + ylim(0, 1) + 
+  ggtitle("Prediction accuracy in train set") +
+  theme_classic()
+
+# prediction on validaton set
 netFit_pred_params_total %>%
   ggplot(aes(x = 1-Specificity, y = Sensitivity)) + 
   geom_jitter(aes(col = repeated_run, shape = model), size = 3, alpha = 0.9) + 
@@ -35,6 +47,7 @@ netFit_pred_params_total %>%
   xlim(0, 1) + ylim(0, 1) + 
   ggtitle("Prediction accuracy in validation cohorts") +
   theme_classic()
+
 
 # selected models: 
 netFit_pred_params_total %>% 
