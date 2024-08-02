@@ -25,10 +25,13 @@ strainSeasons <- c("H1N1_2014", "H1N1_2015", "H1N1_2019", "H1N1_2020",
 
 protein <- "CD83"
 
+time_stamps <- c("d0", "d7")
+time_stamps <- c("d0", "d28")
+
 # prepare data
 metadat_boxplot <- inputDat %>% 
   select(probandID, season, responder, time, c(protein),
-         matches("_abFC|_d0|_d28|_reclassify")) %>% filter(time %in% c("d0", "d28")) %>%
+         matches("_abFC|_d0|_d28|_reclassify")) %>% filter(time %in% time_stamps) %>%
   pivot_longer(matches("reclassify"), names_to = "strain", values_to = "reclassify") %>%
   drop_na(reclassify) %>% 
   mutate(strain = gsub("_reclassify", "", strain),
@@ -67,7 +70,7 @@ bxp_stat <- bxp +
 bxp_stat
 
 # save the plot --------------------------------------------------
-png("output/boxplotProtein_reClass_CD83_overTime.png", width = 768, height = 520)
+png(paste0("output/boxplotProtein_reClass_CD83_overTime_", time_stamps[2], ".png"), width = 768, height = 520)
 bxp_stat
 dev.off()
 

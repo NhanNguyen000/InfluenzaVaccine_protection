@@ -99,7 +99,8 @@ ggboxplot(plotDat_boxplot, x = "responder", y = protein,
   theme(text = element_text(size = 18)) # only have NR and TR people for CD83
 
 ## save the plot --------------------------------------------------
-png(paste0("output/boxplotRNAseq_reClass_", protein, ".png"), width = 624, height =480)
+png(paste0("output/boxplotRNAseq_reClass_", protein, ".png"), width = 624, height = 480)
+#png(paste0("output/boxplotRNAseq_reClass_", protein, ".png"), width = 624, height = 384)
 boxplot_reClass 
 dev.off()
 

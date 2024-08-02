@@ -76,7 +76,11 @@ tstat_longDat <- tstat_all %>%
   mutate(group = paste0(season, "_", strain))
 
 # prepare data with proteins that show consistent trend across strain and season -------------------------------
-consistVars <- tstat_longDat %>% 
+selectedSeasons <- c("2014_H1N1", "2015_H1N1", "2019_H1N1", "2020_H1N1",
+                     "2014_B", "2015_B", "2015_H3N2", "2020_Byamagata") 
+
+consistVars <- tstat_longDat %>%
+  filter(group %in% selectedSeasons) %>%
   mutate(direction = ifelse(tstat < 0, "down", ifelse(tstat > 0, "up", tstat))) %>%
   group_by(varName) %>% add_count(direction) %>%
   filter(n >6) %>% # The up/down trend appear in 6 out of 8 comparison (75% across strain and season) 
@@ -101,16 +105,17 @@ tstat_longDat_consistVars <- tstat_all %>%
   mutate(group = paste0(season, "_", strain))
 
 ## heatmap ----------------------------------------------------------------
-sigPval_vars <- tstat_longDat %>% 
+sigPval_vars <- tstat_longDat %>%
+  filter(group %in% selectedSeasons) %>%
   filter(p.value < 0.05) %>% select(varName) %>% unlist() %>% unique()
 
-selected_vars <- intersect(consistVars, sigPval_vars)
+selected_vars <- intersect(consistVars, sigPval_vars) # 25 proteins
 
 plotDat <- tstat_longDat_consistVars %>% 
   filter(varName %in% selected_vars) %>%
-  slice(-which(group %in% c("2014_H3N2", 
-                            "2019_Bvictoria", "2019_Byamagata", "2019_H3N2", 
-                            "2020_Bvictoria", "2020_H3N2"))) # remove some group if needed
+  slice(which(group %in% selectedSeasons ))
+
+unique((plotDat %>% filter(padj < 0.05))$varName)
 
 plotDat_order <- get.plotDat_clusterRow(plotDat, 
                                         colName = "group", 
@@ -126,10 +131,9 @@ heatmapPlot <- plotDat_order %>%
   theme(axis.text.x = element_text(angle = 25, hjust = 1), text = element_text(size = 24))
 
 # save the plot 
-png("output/heatmapProteins.png", width = 960, height = 1200)
+png("output/heatmapProteins.png", width = 960, height = 864)
 heatmapPlot
 dev.off()
 
-
-# plotDat_DAPs <- plotDat_order
-# save(plotDat_DAPs, file = "plotDat_DAPs.RData")
+# save data
+save(tstat_longDat_consistVars, file = "processedDat/selectedProteins_statOutcome.RData")

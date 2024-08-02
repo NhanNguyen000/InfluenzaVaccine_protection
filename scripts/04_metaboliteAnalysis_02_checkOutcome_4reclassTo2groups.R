@@ -137,8 +137,9 @@ png("output/heatmapMetabolites.png", width = 960, height = 1008)
 heatmapPlot
 dev.off()
 
-# plotDat_DAPs <- plotDat_order
-# save(plotDat_DAPs, file = "plotDat_DAPs.RData")
+# save data
+save(tstat_longDat_consistVars, file = "processedDat/selectedMebos_statOutcome.RData")
+
 
 ## select metabolites  --------------------------------
 library(openxlsx)
