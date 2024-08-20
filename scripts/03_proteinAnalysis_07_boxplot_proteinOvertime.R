@@ -82,7 +82,8 @@ time_stamps_v2 <- c("d0", "d7", "d28")
 metadat_boxplot <- inputDat %>% 
   select(probandID, season, responder, time, c(protein),
          matches("_abFC|_d0|_d28|_reclassify")) %>% 
-  filter(time %in% time_stamps_v2) %>%
+  filter(time %in% time_stamps_v2) %>% 
+  mutate(time = factor(time, levels = c("d0", "d7", "d28"))) %>%
   pivot_longer(matches("reclassify"), names_to = "strain", values_to = "reclassify") %>%
   drop_na(reclassify) %>% 
   mutate(strain = gsub("_reclassify", "", strain),
@@ -95,7 +96,7 @@ bxp_3timepoints <- metadat_boxplot %>%
             add = "jitter", add.params = list(size = 3, alpha = 0.5)) + 
   scale_color_manual(values=c( c("#898366", "#B65008", "#034E91"))) +
   facet_wrap(~strainSeason, nrow = 1)+
-  theme(text = element_text(size = 24))
+  theme(text = element_text(size = 24), legend.box.spacing = unit(0, "pt"))
 
 bxp_3timepoints
 
