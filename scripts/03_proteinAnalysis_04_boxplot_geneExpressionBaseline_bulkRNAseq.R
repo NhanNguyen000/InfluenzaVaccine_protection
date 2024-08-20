@@ -62,17 +62,20 @@ boxplot_reClass <- cowplot::plot_grid(
   plotDat_boxplot %>%
     ggboxplot(x = "H1N1_reclassify", y = protein,
               color = "#898366", add = "jitter", add.params = list(size = 4, alpha = 0.5)) + 
-    stat_compare_means(comparisons = compare_reClass_v2, size = 6, method = "t.test")+
+    stat_compare_means(comparisons = compare_reClass_v2, size = 6, method = "t.test",
+                       label = "p.signif", hide.ns = TRUE, tip.length = 0, vjust = 0.5)+
     theme(text = element_text(size = 18)),
   plotDat_boxplot %>%
     ggboxplot(x = "H3N2_reclassify", y = protein,
               color = "#898366", add = "jitter", add.params = list(size = 4, alpha = 0.5)) + 
-    stat_compare_means(comparisons = compare_reClass, size = 6, method = "t.test")+
+    stat_compare_means(comparisons = compare_reClass, size = 6, method = "t.test",
+                       label = "p.signif", hide.ns = TRUE, tip.length = 0, vjust = 0.5)+
     theme(text = element_text(size = 18)),
   plotDat_boxplot %>%
     ggboxplot(x = "B_reclassify", y = protein,
               color = "#898366", add = "jitter", add.params = list(size = 4, alpha = 0.5)) + 
-    stat_compare_means(comparisons = compare_reClass_v2, size = 6, method = "t.test")+
+    stat_compare_means(comparisons = compare_reClass_v2, size = 6, method = "t.test",
+                       label = "p.signif", hide.ns = TRUE, tip.length = 0, vjust = 0.5)+
     theme(text = element_text(size = 18)),
   nrow = 1
 )
@@ -99,8 +102,8 @@ ggboxplot(plotDat_boxplot, x = "responder", y = protein,
   theme(text = element_text(size = 18)) # only have NR and TR people for CD83
 
 ## save the plot --------------------------------------------------
-png(paste0("output/boxplotRNAseq_reClass_", protein, ".png"), width = 624, height = 480)
-#png(paste0("output/boxplotRNAseq_reClass_", protein, ".png"), width = 624, height = 384)
+#png(paste0("output/boxplotRNAseq_reClass_", protein, ".png"), width = 624, height = 480)
+png(paste0("output/boxplotRNAseq_reClass_", protein, ".png"), width = 624, height = 384)
 boxplot_reClass 
 dev.off()
 

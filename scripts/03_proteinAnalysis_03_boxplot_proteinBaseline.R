@@ -52,6 +52,18 @@ boxplot_reClass <- metadat_boxplot %>%
 
 boxplot_reClass 
 
+# based on reclassification, with only significant values
+boxplot_reClass_v2 <- metadat_boxplot %>% 
+  filter(strainSeason %in% strainSeasons) %>%
+  ggboxplot(x = "reclassify", y = protein,
+            color = "#898366", add = "jitter", add.params = list(size = 3, alpha = 0.5)) + 
+  facet_wrap(~strainSeason, nrow = 2) +
+  stat_compare_means(comparisons = compare_reClass, size = 5, method = "t.test", 
+                     label = "p.signif", hide.ns = TRUE, tip.length = 0, vjust = 0.5)+
+  theme(text = element_text(size = 18))
+
+boxplot_reClass_v2
+
 # based on abFC: NR vs R
 boxplot_abFC <- metadat_boxplot %>% 
   filter(strainSeason %in% strainSeasons) %>%
@@ -76,7 +88,9 @@ boxplot_abD0
 
 ## save the plot --------------------------------------------------
 png(paste0("output/boxplotProtein_reClass_", protein, ".png"), width = 720, height = 696)
-boxplot_reClass 
+#boxplot_reClass 
+png(paste0("output/boxplotProtein_reClass_", protein, ".png"), width = 720, height = 624)
+boxplot_reClass_v2
 dev.off()
 
 png(paste0("output/boxplotProtein_abFC_", protein, ".png"), width = 576, height = 696)

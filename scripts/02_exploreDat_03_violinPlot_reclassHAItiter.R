@@ -18,7 +18,7 @@ metadata_healthy <- cohorts$HAI_all %>%
 H1N1_2015 <- metadata_healthy %>% filter(season == "2015") %>%
   dplyr::select(probandID, cohort, group, 
                 H1N1_d0_log2, H1N1_d28_log2, H1N1_abFC, H1N1_reclassify) %>%
-  mutate(category = ifelse(H1N1_abFC >= 4, "Response", "Non-response")) %>%
+  mutate(category = ifelse(H1N1_abFC >= 4, "Responder", "Non-responder")) %>%
   gather(matches("_d"), key = time, value = HAItiter) %>%
   rename_at(vars(ends_with("_reclassify")), ~ "reclassify") %>%
   mutate(time = gsub("_log2", "", time),
@@ -55,7 +55,7 @@ for (i in strip_both) {
 }
 
 # violin plot to demonstrate the relcassification concept
-png("output/violinPlot_HAIabTiter_reClass.png", width = 720)
+png("output/violinPlot_HAIabTiter_reClass.png", width = 720, height = 432)
 grid.draw(plot_reClass_addColor)
 dev.off()
 
@@ -87,7 +87,7 @@ for (i in strip_both) {
 }
 
 # violin plot to demonstrate the current NR vs.R concept
-png("output/violinPlot_HAIabTiter_NRvsR.png")
+png("output/violinPlot_HAIabTiter_NRvsR.png", height = 432)
 grid.draw(plot_NRvsR_addColor)
 dev.off()
 

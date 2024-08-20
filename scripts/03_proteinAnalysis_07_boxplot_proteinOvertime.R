@@ -37,7 +37,7 @@ metadat_boxplot <- inputDat %>%
   mutate(strain = gsub("_reclassify", "", strain),
          strainSeason = paste0(strain, "_", season))
 
-## boxplots for each timepoint, per group, per season --------------------------
+## boxplots for between 2 timepoints, per group, per season --------------------------
 bxp <- metadat_boxplot %>% 
   filter(strainSeason %in% strainSeasons) %>%
   ggboxplot(x = "reclassify", y = protein, color = "time",
@@ -48,7 +48,7 @@ bxp <- metadat_boxplot %>%
 
 bxp
 
-## add non sig. paired t_test to the graph ---------------------------------------
+### add non sig. paired t_test to the graph ---------------------------------------
 metadat_boxplot2 <- metadat_boxplot %>% add_count(probandID, strainSeason) %>% filter(n == 2)
 
 stat.test <- metadat_boxplot2 %>% 
@@ -68,6 +68,17 @@ bxp_stat <- bxp +
   theme(legend.position = "top")
 
 bxp_stat
+
+## boxplots for between 3 timepoints, per group, per season --------------------------
+bxp <- metadat_boxplot %>% 
+  filter(strainSeason %in% strainSeasons) %>%
+  ggboxplot(x = "reclassify", y = protein, color = "time",
+            add = "jitter", add.params = list(size = 3, alpha = 0.5)) + 
+  scale_color_manual(values=c( c("#B65008", "#034E91"))) +
+  facet_wrap(~strainSeason, nrow = 2)+
+  theme(text = element_text(size = 18))
+
+bxp
 
 # save the plot --------------------------------------------------
 png(paste0("output/boxplotProtein_reClass_CD83_overTime_", time_stamps[2], ".png"), width = 768, height = 520)
