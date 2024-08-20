@@ -18,7 +18,7 @@ inputDat <- protein_Dat %>%
   lapply(function(x) x %>% rownames_to_column("name")) %>%
   purrr::reduce(full_join) %>% right_join(metadata_healthy)
 
-# boxplot ======================================================================
+# boxplot between 2 timepoints ======================================================================
 # select season and proteins 
 strainSeasons <- c("H1N1_2014", "H1N1_2015", "H1N1_2019", "H1N1_2020",
                    "B_2014", "B_2015", "H3N2_2015", "Byamagata_2020") # season have at least >= 3 participant per reclassification group
@@ -69,19 +69,42 @@ bxp_stat <- bxp +
 
 bxp_stat
 
+# boxplot between 3 timepoints ======================================================================
+# select season and proteins 
+strainSeasons <- c("H1N1_2014", "H1N1_2015", "H1N1_2019", "H1N1_2020",
+                   "B_2014", "B_2015", "H3N2_2015", "Byamagata_2020") # season have at least >= 3 participant per reclassification group
+
+protein <- "CD83"
+
+time_stamps_v2 <- c("d0", "d7", "d28")
+
+# prepare data
+metadat_boxplot <- inputDat %>% 
+  select(probandID, season, responder, time, c(protein),
+         matches("_abFC|_d0|_d28|_reclassify")) %>% 
+  filter(time %in% time_stamps_v2) %>%
+  pivot_longer(matches("reclassify"), names_to = "strain", values_to = "reclassify") %>%
+  drop_na(reclassify) %>% 
+  mutate(strain = gsub("_reclassify", "", strain),
+         strainSeason = paste0(strain, "_", season))
+
 ## boxplots for between 3 timepoints, per group, per season --------------------------
-bxp <- metadat_boxplot %>% 
+bxp_3timepoints <- metadat_boxplot %>% 
   filter(strainSeason %in% strainSeasons) %>%
   ggboxplot(x = "reclassify", y = protein, color = "time",
             add = "jitter", add.params = list(size = 3, alpha = 0.5)) + 
-  scale_color_manual(values=c( c("#B65008", "#034E91"))) +
-  facet_wrap(~strainSeason, nrow = 2)+
-  theme(text = element_text(size = 18))
+  scale_color_manual(values=c( c("#898366", "#B65008", "#034E91"))) +
+  facet_wrap(~strainSeason, nrow = 1)+
+  theme(text = element_text(size = 24))
 
-bxp
+bxp_3timepoints
 
 # save the plot --------------------------------------------------
 png(paste0("output/boxplotProtein_reClass_CD83_overTime_", time_stamps[2], ".png"), width = 768, height = 520)
 bxp_stat
+dev.off()
+
+png("output/boxplotProtein_reClass_CD83_over3timepoints.png", width = 1440, height = 432)
+bxp_3timepoints
 dev.off()
 
