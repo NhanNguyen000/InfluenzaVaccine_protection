@@ -23,6 +23,9 @@ for (strain in strains) {
   }
 }
 
+# save important variable information
+save(varImp_list, file = "processedDat/predictOutcome_varImp.RData")
+
 # important variables in 2 selected models ===================================================
 varImp_selectedList <- list()
 varImp_selectedList$H1N1_knn <- varImp_list$H1N1$knn

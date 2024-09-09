@@ -49,15 +49,15 @@ gene <- "ITFG1"
 dat_temp <- cbind("gene_expression" = dat[, gene],
                   "H3N2_ab_d28_log2" = dat$H3N2_d28_log2)
 
-## save the plot 
-png(paste0("output/cor_RNAseq_" , gene, "H3N2_abD28.png"))
-
-dat_temp %>% as.data.frame() %>% 
+plotDat <- dat_temp %>% as.data.frame() %>% 
   ggplot(aes(x = gene_expression, y = H3N2_ab_d28_log2)) + 
   geom_point(size = 5, alpha = 0.5) +
   geom_smooth(method = "lm", se=FALSE) + stat_cor(size = 8) + 
   theme_classic()+
   theme(text = element_text(size = 24)) + ggtitle(gene)
 
+## save the plot 
+png(paste0("output/cor_RNAseq_" , gene, "H3N2_abD28.png"))
+plotDat
 dev.off()
 

@@ -24,7 +24,10 @@ for (strain in strains) {
     outcome_ROC[[strain]][[nameModel]] <- predict_ROC
   }
 }
+# save models' outcome
+save(outcome_prediction, outcome_ROC, file = "processedDat/predictOutcome_modelsPerformance.RData")
 
+# process the models' outcome
 outcomeROC <- outcome_ROC %>% 
   lapply(function(x) x %>% 
            lapply(function(y) y %>% 
