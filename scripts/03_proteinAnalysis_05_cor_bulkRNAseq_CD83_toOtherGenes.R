@@ -57,16 +57,35 @@ plot_CD83_CCR7 <- bulkRNAseq_baseline %>%
 cowplot::plot_grid(plot_CD83_CD40, plot_CD83_CD80, plot_CD83_CCR7, nrow =1)
 
 ## save the plot 
-png("output/cor_RNAseq_CD83_otherGenes.png", width = 1200)
+png("output/cor_RNAseq_CD83_otherGenes.png", width = 1200, height = 480)
 cowplot::plot_grid(plot_CD83_CD40, plot_CD83_CD80, plot_CD83_CCR7, nrow =1)
 dev.off()
 
 # correlation heatmap -----------------------------------------------------------------
+library(rstatix)
+
 corDat <- bulkRNAseq_baseline %>% select(c("CD83", CD83_relatedPro))
 cor.mat <- corDat %>% cor_mat()
 cor.mat %>% cor_get_pval()
 cor.mat %>%
   cor_reorder() %>%
-  pull_lower_triangle() %>%
+ # pull_lower_triangle() %>%
   cor_plot(label = TRUE, insignificant = "blank", 
            palette = get_palette(c("blue", "white", "red"), 20))
+
+# with selected genes
+corDat_v2 <- bulkRNAseq_baseline %>% select(c("CD83", "CD40", "CD80", "CCR7"))
+cor.mat <- corDat_v2 %>% cor_mat()
+cor.mat %>% cor_get_pval()
+cor.mat %>% cor_get_pval()
+
+png("output/cor_RNAseq_CD83_otherGenes_heatmap.png")
+
+cor.mat %>%
+  cor_reorder() %>%
+  cor_plot(method = "color", type = "upper",
+           label = TRUE, insignificant = "blank", 
+           palette = get_palette(c("#3C5488FF", "white", "#E64B35FF"), 10),
+           font.label = list(size = 1.8, color = "black", tl.cex = 5))
+
+dev.off()

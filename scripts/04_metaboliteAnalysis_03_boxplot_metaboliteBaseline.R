@@ -98,7 +98,9 @@ boxplot_reClass  <- metadat_boxplot %>%
   ggboxplot(x = "reclassify", y = mebo,
             color = "#898366", add = "jitter", add.params = list(size = 3, alpha = 0.5)) + 
   facet_wrap(~strainSeason, nrow = 2) +
-  stat_compare_means(comparisons = compare_reClass, size = 5, method = "t.test")+
+ # stat_compare_means(comparisons = compare_reClass, size = 5, method = "t.test")+
+  stat_compare_means(comparisons = compare_reClass, size = 5, method = "t.test", #with only significant values
+                     label = "p.signif", hide.ns = TRUE, tip.length = 0, vjust = 0.5)+
   theme(text = element_text(size = 18))
 
 boxplot_reClass 
@@ -127,7 +129,8 @@ boxplot_abD0
 
 
 ## save the plot --------------------------------------------------
-png(paste0("output/boxplotMetabolite_reClass_", mebo, ".png"), width = 720, height = 696)
+#png(paste0("output/boxplotMetabolite_reClass_", mebo, ".png"), width = 720, height = 696)
+png(paste0("output/boxplotMetabolite_reClass_", mebo, ".png"), width = 720, height = 624)
 boxplot_reClass 
 dev.off()
 

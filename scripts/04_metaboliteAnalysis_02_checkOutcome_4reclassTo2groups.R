@@ -130,7 +130,10 @@ heatmapPlot <- plotDat_order %>%
   geom_text(aes(label = ifelse(p.value < 0.05, "*", NA)), size = 10) +
   scale_fill_gradient2(low = "blue", mid = "white", high = "red") + 
   theme_bw() + 
-  theme(axis.text.x = element_text(angle = 25, hjust = 1), text = element_text(size = 24))
+  theme(axis.text.x = element_text(angle = 25, hjust = 1), text = element_text(size = 24), 
+        legend.position="top", legend.justification="right", 
+        legend.box.spacing = unit(0, "pt"),
+        legend.margin=margin(0,70,0,0, "pt"))
 
 # save the plot 
 png("output/heatmapMetabolites.png", width = 960, height = 1008)

@@ -107,12 +107,22 @@ boxplot_reClass_predict <- metadat_boxplot %>%
   stat_compare_means(comparisons = compare_reClass, size = 5, method = "t.test")+
   theme(text = element_text(size = 18))
 
+# based on reclassification, with only significant values
+boxplot_reClass_predict_v2 <- metadat_boxplot %>% 
+  ggboxplot(x = "reclassify", y = paste0(protein, "_", model_name),
+            color = "#898366", add = "jitter", add.params = list(size = 3, alpha = 0.5)) + 
+  facet_wrap(~strainSeason, nrow = 1) +
+  stat_compare_means(comparisons = compare_reClass, size = 5, method = "t.test", 
+                     label = "p.signif", hide.ns = TRUE, tip.length = 0, vjust = 0.5)+
+  theme(text = element_text(size = 18))
+
 ## save the plot
 png(paste0("output/boxplotProtein_reClass_", protein, "_159subjects_season2015.png"), width = 720, height = 432)
 boxplot_reClass_measure
 dev.off()
 
-png(paste0("output/omicPred_boxplotProtein_reClass_", protein, "_159subjects_season2015.png"), width = 720, height = 432)
-boxplot_reClass_predict
+png(paste0("output/omicPred_boxplotProtein_reClass_", protein, "_159subjects_season2015.png"), width = 720)
+#boxplot_reClass_predict
+boxplot_reClass_predict_v2
 dev.off()
 

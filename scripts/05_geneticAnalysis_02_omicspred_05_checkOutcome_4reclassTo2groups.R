@@ -153,3 +153,41 @@ IFT52 # appear
 CDH5
 IL18BP
 
+# Pathay analysis -----------------------------------------------
+library(clusterProfiler)
+library(org.Hs.eg.db)
+library(enrichplot)
+library(stringr)
+library(DOSE)
+library(aPEAR)
+
+pval <- 0.05
+qval <- 0.05
+
+geneList <- data.frame(bitr(geneID = plotDat$varName, 
+                            fromType = 'SYMBOL', toType = c('ENTREZID', 'ENSEMBL'),
+                            OrgDb = org.Hs.eg.db, drop = T))
+
+enr.GO.BP <- enrichGO(gene = geneList$ENTREZID,
+                      OrgDb = org.Hs.eg.db,
+                      keyType = "ENTREZID",
+                      ont = "BP", # Biological process
+                      #pAdjustMethod = "none", #none or fdr
+                      pAdjustMethod = "fdr", #none or fdr
+                      pvalueCutoff = pval,
+                      qvalueCutoff = qval,
+                      readable = TRUE) 
+
+enr.GO.MF <- enrichGO(gene = geneList$ENTREZID,
+                      OrgDb = org.Hs.eg.db,
+                      keyType = "ENTREZID",
+                      ont = "MF", # molecular function
+                      #pAdjustMethod = "none", #none or fdr
+                      pAdjustMethod = "fdr", #none or fdr
+                      pvalueCutoff = pval,
+                      qvalueCutoff = qval,
+                      readable = TRUE)
+
+# plot
+View(enr.GO.BP@result)
+View(enr.GO.MF@result)

@@ -23,12 +23,17 @@ metadata_4groups <- metadata_healthy %>%
   mutate(strain = gsub("_reclassify", "", strain),
          strain = factor(strain, levels = c("Bvictoria", "Byamagata", "B", "H3N2", "H1N1")))
 
+# plot 
+#color_order <- c("#792C74", "#65771E", "#B65008", "#036879")
+color_order <- c("#9F5590CC", "#3194CCCC", "#3194CCCC", "#3194CC")
+
 plot_reClassGroups <- metadata_4groups %>%
   ggplot(aes(y = strain, fill = reclassify)) +
-  geom_bar() + 
+ # geom_bar() + 
+  geom_bar(colour="grey40") + 
   #facet_grid(season ~., scales = "free", space = "free") + # the facet doesn have equal size with this code
   facet_grid(season ~., scales = "free") + 
-  scale_fill_manual(values=c( c("#792C74", "#65771E", "#B65008", "#036879"))) +
+  scale_fill_manual(values=c(color_order)) +
   theme(strip.text.y = element_text(angle = 0)) +
   theme_classic() + 
   labs(x = "Number of vaccinees", y = "Strain", fill = "Per strain") + 

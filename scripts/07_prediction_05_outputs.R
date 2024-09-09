@@ -18,19 +18,19 @@ for (strain in strains) {
     
     outcome_prediction[[strain]][[nameModel]] <- predictOutcome %>% 
       lapply(function(x) x$byClass%>% 
-               as.data.frame %>% rownames_to_column("parameter")) %>% 
-      bind_rows(.id = "vali_set") %>% rename("value" = ".") 
+               as.data.frame %>% tibble::rownames_to_column("parameter")) %>% 
+      dplyr::bind_rows(.id = "vali_set") %>% dplyr::rename("value" = ".") 
     
     outcome_ROC[[strain]][[nameModel]] <- predict_ROC
   }
 }
 
-# plot ROC on traningn set ------------------------------
 outcomeROC <- outcome_ROC %>% 
   lapply(function(x) x %>% 
            lapply(function(y) y %>% 
                     lapply(function(z) round(auc(z), 2)))) # AUC = Area under the curve
 
+# plot ROC on traning set ------------------------------
 roc_list <-  outcome_ROC %>% 
   lapply(function(x) x %>% 
            lapply(function(y) y$trainSet)) 
@@ -67,22 +67,22 @@ roc_plotList$B
 dev.off()
 
 
-# ROC boxplot for validation set-------------------------------------------
+# ROC boxplot for validation set-----------------------------------------------
 outcomeROC_valiSet <- outcomeROC %>% 
-  lapply(function(x) x%>%  bind_rows(.id = "model")) %>%
-  bind_rows(.id = "trainSet_strain") %>% 
-  select(-trainSet) %>%
-  pivot_longer(cols = -c("model", "trainSet_strain"), 
+  lapply(function(x) x%>%  dplyr::bind_rows(.id = "model")) %>%
+  dplyr::bind_rows(.id = "trainSet_strain") %>% 
+  dplyr::select(-trainSet) %>%
+  tidyr::pivot_longer(cols = -c("model", "trainSet_strain"), 
                names_to = "vali_set", values_to = "AUC") %>% 
-  drop_na(AUC)
+  tidyr::drop_na(AUC)
 
-# box plot
+## box plot --------------------------------------------------------------------
 plotList <- list()
 plotList_v2 <- list()
 
 for (strain in strains) {
   plotList[[strain]] <- outcomeROC_valiSet %>% 
-    filter(trainSet_strain == strain) %>%
+    dplyr::filter(trainSet_strain == strain) %>%
     ggplot(aes(x = model, y = AUC)) +
     geom_boxplot(outlier.shape = NA) +
     geom_jitter(size = 3, width = 0.2) +
@@ -92,7 +92,7 @@ for (strain in strains) {
     ggtitle(paste0(strain, " - AUC in validation sets"))
   
   plotList_v2[[strain]] <- outcomeROC_valiSet %>% 
-    filter(trainSet_strain == strain) %>%
+    dplyr::filter(trainSet_strain == strain) %>%
     ggplot(aes(x = model, y = AUC)) +
     geom_boxplot(outlier.shape = NA) +
     geom_jitter(aes(col = vali_set), size = 3, width = 0.2) +
@@ -102,10 +102,52 @@ for (strain in strains) {
     ggtitle(paste0(strain, " - AUC in validation sets"))
 }
 
+## box plot, set up the colors ------------------------------------
+# blue scheme for same strain different year, gray for differnt strains
+plotList_v3 <- list()
+
+for (strain in strains) {
+  # prepare data
+  dat_temp <- outcomeROC_valiSet %>% 
+    dplyr::filter(trainSet_strain == strain)  
+  
+  # sort the model based on their performance
+  order_models <- dat_temp %>% 
+    dplyr::group_by(model) %>% 
+    dplyr::summarise(mean_AUC = mean(AUC)) %>% dplyr::arrange(desc(mean_AUC))
+  
+  # set up the colors: blue scheme for same strain different year, gray for differnt strains
+  color_sameStrain <- dat_temp$vali_set[grep(strain, dat_temp$vali_set)] %>% unique()
+  blue_scheme <- colorRampPalette(c("dodgerblue", "navyblue"))(length(color_sameStrain))
+  
+  color_diffStrain <- dat_temp$vali_set[-grep(strain, dat_temp$vali_set)] %>% unique()
+  gray_scheme <- colorRampPalette(c("gray50", "gray75"))(length(color_diffStrain))
+  
+  plotList_v3[[strain]] <- dat_temp %>%
+    dplyr::mutate(model = factor(model, levels = order_models$model),
+           vali_set = factor(vali_set, 
+                             levels = c(color_sameStrain, " ", color_diffStrain))) %>%
+    ggplot(aes(x = model, y = AUC)) +
+    geom_boxplot(outlier.shape = NA) +
+    geom_jitter(aes(col = vali_set), size = 5, width = 0.2, alpha = 0.7) +  
+    ggtitle(paste0(strain, " - AUC in validation sets")) +
+    scale_colour_manual(values = c(blue_scheme, "white", gray_scheme), drop = FALSE) +
+    guides(color=guide_legend(ncol=2)) +
+    theme_classic() + 
+    theme(axis.text.x = element_text(angle = 30, hjust=1),
+          text = element_text(size = 20),
+          legend.position = c(1, 1.1),
+          legend.justification = c("right", "top"),
+          legend.box.just = "right",
+          legend.margin = margin(6, 6, 6, 6), 
+          legend.title = element_blank(),
+          legend.text=element_text(size=16))
+}
+
+
 # save plot
-png("output/auc_H1N1in2015_valiSet.png", width = 720)
-cowplot::plot_grid(plotList$H1N1,
-                   plotList_v2$H1N1)
+png("output/auc_H1N1in2015_valiSet.png", width = 672)
+plotList_v3$H1N1
 dev.off()
 
 png("output/auc_H3N2in2015_valiSet.png", width = 720)
@@ -113,9 +155,8 @@ cowplot::plot_grid(plotList$H3N2,
                    plotList_v2$H3N2)
 dev.off()
 
-png("output/auc_Bin2015_valiSet.png", width = 720)
-cowplot::plot_grid(plotList$B,
-                   plotList_v2$B)
+png("output/auc_Bin2015_valiSet.png", width = 672)
+plotList_v3$B
 dev.off()
 
 # scatter plot: sensitivity vs. specificitys -------------------------------------------

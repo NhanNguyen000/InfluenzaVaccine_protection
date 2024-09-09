@@ -128,9 +128,30 @@ modelsCount_plot <- models_count %>%
 
 modelsCount_plot
 
+
+usedModelsCount_plot <- models_count %>% 
+  filter(status == "used") %>%
+  mutate(model = factor(model, levels = c("RNAseq", "Somalogic", "Olink", 
+                                          "Metabolon", "Nightingale"))) %>%
+  ggplot(aes(x = model, y = num_models, label = num_models)) + 
+  geom_bar(stat = "identity", fill = "#C7C2A6") +
+  geom_text(size = 6, vjust=-0.5) +
+  scale_y_log10(limits = c(1, 1e4), breaks = c(1,1e1, 1e2, 1e3, 1e4)) + 
+  annotation_logticks(sides = "l")  + 
+  ylab("Number of molecules predicted by omicsPred") +
+  theme_classic()+
+  theme(text = element_text(size = 18))
+
+usedModelsCount_plot
+
 # save the plot 
 png("output/omicPred_modelsCount_barplot.png", width = 576)
 modelsCount_plot
+dev.off()
+
+
+png("output/omicPred_usedModelsCount_barplot.png", height = 432, width = 576)
+usedModelsCount_plot
 dev.off()
 
 ## selected models, plot  / visualization -------------------------------------------------
@@ -148,7 +169,7 @@ models_pred_Tab %>%
   ggplot(aes(x = num_SNPs_use, y = as.numeric(Internal_R2))) + 
   geom_point() + theme_classic()
 
-# plot selected models
+# plot use and non-used models
 models_pred_Tab %>% 
   ggplot() + 
   geom_jitter(aes(x = X.SNP, y = as.numeric(Internal_R2), col = model), width = 0.2, size = 1, alpha = 0.5) + 
@@ -178,3 +199,4 @@ selectedModels_plot
 png("output/omicPred_selectedModels_scatterplot.png", width = 528)
 selectedModels_plot
 dev.off()
+

@@ -27,29 +27,32 @@ plotDat <- metadata_healthy %>%
 
 
 ## make plot ------------------ ------------------
+#color_order <- c("#792C74", "#65771E", "#B65008", "#036879")
+color_order <- c("#9F5590CC", "#3194CCCC", "#3194CCCC", "#3194CC")
+
 plotList <- list()
 plotList$H1N1 <- plotDat %>% #filter(season == "2015") %>%
   ggplot() +
   geom_boxplot(aes(x = H1N1_d0, y = H1N1_abFC_log2), outlier.color = NA) + 
   geom_jitter(aes(x = H1N1_d0, y = H1N1_abFC_log2, color = H1N1_reclassify), 
               width = 0.2, size = 3, alpha = 0.8) + 
-  scale_color_manual(values=c( c("#792C74", "#65771E", "#B65008", "#036879"))) +
+  scale_color_manual(values=c( color_order)) +
   geom_smooth(aes(x = H1N1_d0_log2, y = H1N1_abFC_log2), method = "lm", se = FALSE) + # make regress line based on the log2(exact data value)
   stat_cor(aes(x = H1N1_d0_log2, y = H1N1_abFC_log2), # calculate the correlation based on the log2(exact data value)
-           label.x = 5, label.y = 10, size = 5) + 
+           label.x = 5, label.y = 10, size = 7) + 
   ylim(0, 12.5) + theme_classic() + 
-  theme(legend.position = "top", text = element_text(size = 16))
+  theme(legend.position = "top", text = element_text(size = 20))
 
 plotList$H3N2 <- plotDat %>% 
   ggplot() +
   geom_boxplot(aes(x = H3N2_d0, y = H3N2_abFC_log2), outlier.color = NA) + 
   geom_jitter(aes(x = H3N2_d0, y = H3N2_abFC_log2, color = H3N2_reclassify), 
               width = 0.2, size = 3, alpha = 0.8) + 
-  scale_color_manual(values=c( c("#792C74", "#65771E", "#B65008", "#036879"))) +
+  scale_color_manual(values=c( color_order)) +
   geom_smooth(aes(x = H3N2_d0_log2, y = H3N2_abFC_log2), method = "lm", se = FALSE) + # make regress line based on the log2(exact data value)
   stat_cor(aes(x = H3N2_d0_log2, y = H3N2_abFC_log2), # calculate the correlation based on the log2(exact data value)
-           label.x = 5, label.y = 10, size = 5) + 
-  ylim(0, 12.5) + theme_classic() + 
+           label.x = 5, label.y = 10, size = 7) + 
+  ylim(0, 12.7) + theme_classic() + 
   theme(legend.position = "top", text = element_text(size = 16))
 
 plotList$B <- plotDat %>% drop_na(B_d0) %>%
@@ -57,47 +60,50 @@ plotList$B <- plotDat %>% drop_na(B_d0) %>%
   geom_boxplot(aes(x = B_d0, y = B_abFC_log2), outlier.color = NA) + 
   geom_jitter(aes(x = B_d0, y = B_abFC_log2, color = B_reclassify), 
               width = 0.2, size = 3, alpha = 0.8) + 
-  scale_color_manual(values=c( c("#792C74", "#65771E", "#B65008", "#036879"))) +
+  scale_color_manual(values=c( color_order)) +
   geom_smooth(aes(x = B_d0_log2, y = B_abFC_log2), method = "lm", se = FALSE) + # make regress line based on the log2(exact data value)
   stat_cor(aes(x = B_d0_log2, y = B_abFC_log2), # calculate the correlation based on the log2(exact data value)
-           label.x = 5, label.y = 10, size = 5) + 
+           label.x = 5, label.y = 10, size = 7) + 
   ylim(0, 12.5) + theme_classic() + 
-  theme(legend.position = "top", text = element_text(size = 16))
+  theme(legend.position = "top", text = element_text(size = 20))
 
 plotList$Bvictoria <- plotDat %>% drop_na(Bvictoria_d0) %>%
   ggplot() +
   geom_boxplot(aes(x = Bvictoria_d0, y = Bvictoria_abFC_log2), outlier.color = NA) + 
   geom_jitter(aes(x = Bvictoria_d0, y = Bvictoria_abFC_log2, color = Bvictoria_reclassify), 
               width = 0.2, size = 3, alpha = 0.8) + 
-  scale_color_manual(values=c( c("#792C74", "#65771E", "#B65008", "#036879"))) +
+  scale_color_manual(values=c( color_order)) +
   geom_smooth(aes(x = Bvictoria_d0_log2, y = Bvictoria_abFC_log2), method = "lm", se = FALSE) + # make regress line based on the log2(exact data value)
   stat_cor(aes(x = Bvictoria_d0_log2, y = Bvictoria_abFC_log2), # calculate the correlation based on the log2(exact data value)
-           label.x = 5, label.y = 10, size = 5) + 
+           label.x = 5, label.y = 10, size = 7) + 
   ylim(0, 12.5) + theme_classic() + 
-  theme(legend.position = "top", text = element_text(size = 16))
+  theme(legend.position = "top", text = element_text(size = 20))
 
 plotList$Byamagata <- plotDat %>% drop_na(Byamagata_d0) %>%
   ggplot() +
   geom_boxplot(aes(x = Byamagata_d0, y = Byamagata_abFC_log2), outlier.color = NA) + 
   geom_jitter(aes(x = Byamagata_d0, y = Byamagata_abFC_log2, color = Byamagata_reclassify), 
               width = 0.2, size = 3, alpha = 0.8) + 
-  scale_color_manual(values=c( c("#792C74", "#65771E", "#B65008", "#036879"))) +
+  scale_color_manual(values=c( color_order)) +
   geom_smooth(aes(x = Byamagata_d0_log2, y = Byamagata_abFC_log2), method = "lm", se = FALSE) + # make regress line based on the log2(exact data value)
   stat_cor(aes(x = Byamagata_d0_log2, y = Byamagata_abFC_log2), # calculate the correlation based on the log2(exact data value)
-           label.x = 5, label.y = 10, size = 5) + 
+           label.x = 5, label.y = 10, size = 7) + 
   ylim(0, 12.5) + theme_classic() + 
-  theme(legend.position = "top", text = element_text(size = 16))
+  theme(legend.position = "top", text = element_text(size = 20))
 
 ## save the plot ------------------ ------------------
 # for H1N1
-ggsave("output/cor_antibodyD0_vsAbFC_H1N1.png", 
-       plotList$H1N1, device = "png")
+png("output/cor_antibodyD0_vsAbFC_H1N1.png", width = 672)
+plotList$H1N1
+dev.off()
 
 # for H3N2 and B strains
 plotGraph <- cowplot::plot_grid(
   plotList$H3N2, plotList$B, plotList$Bvictoria, plotList$Byamagata,
   nrow = 2
 )
-ggsave("output/cor_antibodyD0_vsAbFC_H3N2_Bstrains.png", 
-       plotGraph, device = "png")
+
+png("output/cor_antibodyD0_vsAbFC_H3N2_Bstrains.png", width = 1200, height = 960)
+plotGraph
+dev.off()
 
