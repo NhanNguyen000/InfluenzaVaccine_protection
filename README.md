@@ -13,6 +13,7 @@ This repository for analysing the serological and multi-omics data from iMED and
    - The **qtl** folder store the outcome of the QTL analysiss
    - The **pathwayAnalsysis_allSigMebos** folder store the outcome of pathway analysis from the Metabo Analyst website ([metaboanalyst.ca](https://www.metaboanalyst.ca))
 - The **temp** folder stores data, code, outcome at the development phase, which is a preliminary stage before the final analysis.
+- The **sendOut** folder contains data, code, outcome that were generated for other colleagues' srequests.
 
 ## Related publication
 TBC. Publication DOI: To be added.\
