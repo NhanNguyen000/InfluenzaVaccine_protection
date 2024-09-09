@@ -1,5 +1,4 @@
 # CiiM | Influenza project, seroprotection-based classfication
-iMED and ZirFlu cohortss
 
 ## Description
 This repository for analysing the serological and multi-omics data from iMED and ZirFLu (influenza-vaccinated cohorts) in R. The multi-omics data includes plasma metabolomic, plasma proteomics, bulk transcriptomics, and single-cell transcriptomics data derived from donors' blood samples.s
