@@ -1,0 +1,17 @@
+## Note: there are 66791 files (input and output) related to omicsPred models 
+
+These files is stored in the **processedData** folder at the local cluster with the folder structure:
+processedDat/omicsPred
+|-- input               # the genetic data from iMED cohort (season 2015)
+|-- omicsPred_models    # the model files download from [https://www.omicspred.org](https://www.omicspred.org) with INTERVAL training cohorts
+|   |-- Metabolon
+|   |-- Nightingale
+|   |-- Olink
+|   |-- RNAseq
+|   `-- SomaScan
+`-- output             # the outcome from using model files with genetic data from iMED cohort 
+    |-- Metabolon
+    |-- Nightingale
+    |-- Olink
+    |-- RNAseq
+    `-- SomaScan
